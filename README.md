@@ -1,4 +1,4 @@
-# Home-Control
+# Home Environment Monitor
 
 ## Table of Content
 - [Project Information](#project-information)
