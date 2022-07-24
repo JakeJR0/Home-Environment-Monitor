@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <title>{{session["app_title"]}} | Sensor Management</title>
+        <!-- Main Tags -->
+
+        <meta name="title" content="{{session["app_title"]}} | Sensor Management">
+        <meta name="description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{session["url"]}}">
+        <meta property="og:title" content="{{session["app_title"]}} | Sensor Management">
+        <meta property="og:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="{{session["url"]}}">
+        <meta property="twitter:title" content="{{session["app_title"]}} | Sensor Management">
+        <meta property="twitter:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Mobile -->
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- Discord -->
+        <meta name="theme-color" content="#B30000" />
+
+        <!-- Bootstrap -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="{{session["url"]}}">{{session["app_title"]}}</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="{{session["url"]}}">Home</a>
+                        </li>
+                        {%for i in menu: %}
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
+                        </li>
+                        {%endfor%}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="text-center">
+            <h1 class="display-4">
+                Welcome to Sensor Management,<br />{{session["first_name"]}}
+            </h1>
+
+            <p>
+                Within this area, you are able to manage the
+                sensors that are used to gather data about the
+                home environment.
+            </p>
+
+            <br />
+
+            <script type="text/javascript">
+                let session_url = window.location.href;
+                route = session_url.indexOf("sensor_management")
+                session_url = session_url.slice(0, route)
+
+                function toggleSensorState() {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("get", session_url + "/toggle_sensor")
+                    xhr.responseType = "json";
+                    xhr.send()
+
+                    xhr.onload = function () {
+                        const state = xhr.response;
+                        const currentValue = state.value
+                        const valid = state.success
+                        if (valid == true) {
+                            console.log("Successfully interacted with the server.");
+                            button = document.getElementById("sensor_button");
+                            console.log(state);
+                            if (currentValue == true) {
+                                button.innerHTML = "Online";
+                            } else {
+                                button.innerHTML = "Offline";
+                            }
+                        } else {
+                            console.log("Failed to change the sensor state.");
+                        }
+
+                    }
+                } 
+
+
+                function toggleEnvironmentState() {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("get", session_url + "/toggle_environment_modification")
+                    xhr.responseType = "json";
+                    xhr.send()
+
+                    xhr.onload = function () {
+                        const state = xhr.response;
+                        const currentValue = state.value
+                        const valid = state.success
+                        if (valid == true) {
+                            console.log("Successfully interacted with the server.");
+                            button = document.getElementById("environment_button");
+                            console.log(state);
+                            if (currentValue == true) {
+                                button.innerHTML = "Online";
+                            } else {
+                                button.innerHTML = "Offline";
+                            }
+                        } else {
+                            console.log("Failed to change the environment state.");
+                        }
+
+                    }
+                }
+
+                function updateStats() {
+                    let httpReq = new XMLHttpRequest()
+                    httpReq.open("get", session_url + "/recent_sensor_information")
+                    httpReq.responseType = "json";
+                    httpReq.send()
+
+                    httpReq.onload = function () {
+                        const data = httpReq.response;
+                        var temperature;
+                        var humidity;
+
+                        try {
+                            temperature = data.temperature;
+                            humidity = data.humidity;
+                        } catch (TypeError) {
+                            console.warn("Failed to get sensor data from server.");
+                            return;
+                        }
+
+                        temperature_button = document.getElementById("temperature");
+                        humidity_button = document.getElementById("humidity");
+
+                        temperature_button.innerHTML = temperature + "°C";
+                        humidity_button.innerHTML = humidity + "%";
+
+                    }
+                }
+
+                updateStats();
+                setInterval(updateStats, 3000);
+
+            </script>
+
+            <div>
+                <table style="width: 50%; margin: auto; table-layout: fixed; border-collapse: separate; border-spacing: 10px 100px;">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                <div class="card text-white bg-primary mb-3">
+                                    <div class="card-title">Current Temperature</div>
+                                    <div class="card-text" id="temperature">Loading...</div>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="card text-white bg-primary mb-3">
+                                    <div class="card-title">Current Humidity</div>
+                                    <div class="card-text" id="humidity">Loading...</div>
+                                </div>
+
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            
+            <table class="table" style="width: 50%; margin: auto; margin-top: -3%; table-layout: fixed; ">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            Sensors
+                        </th>
+                        <th scope="col">
+                            Environment Modifications
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="sensor_button">
+                            {% if sensor_state == True: %}
+                                Online
+                            {% else: %}
+                                Offline
+                            {% endif %}
+                        </td>
+                        <td id="environment_button">
+                            {% if environment_state == True: %}
+                                Online
+                            {% else: %}
+                                Offline
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="btn btn-primary bi bi-power" onclick="toggleSensorState()">
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary bi bi-power" onclick="toggleEnvironmentState()">
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+
+            <br />
+            <br />
+
+
+            <form action="" method="post" style="width:50%; margin: auto;">
+                <div class="md-form form-lg">
+                    <label for="temperature">
+                        Wanted Temperature:
+                    </label>
+                    <input class="form-control form-control-lg" style="text-align: center;" name="temperature" id="temperature" placeholder="{{temperature}}" type="number" step="0.1" autocomplete="off" required />
+                </div>
+                <br />
+                <button type="submit" class="btn btn-primary">
+                    Change
+                </button>
+            </form>
+
+
+        </div>
+
+
+    </body>
+</html>
