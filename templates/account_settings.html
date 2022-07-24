@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+
+        <!--
+            Required Data for page:
+
+                    user_id: user_details[0]
+                    keycard_count: user_details[1]
+
+                first_name: session["first_name"]
+                last_name: session["last_name"]
+
+        -->
+
+        <meta charset="utf-8" />
+        <title>{{session["app_title"]}} | User Management</title>
+        <!-- Main Tags -->
+
+        <meta name="title" content="{{session["app_title"]}} | User Management">
+        <meta name="description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{session["url"]}}">
+        <meta property="og:title" content="{{session["app_title"]}} | User Management">
+        <meta property="og:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="{{session["url"]}}">
+        <meta property="twitter:title" content="{{session["app_title"]}} | User Management">
+        <meta property="twitter:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Mobile -->
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- Discord -->
+        <meta name="theme-color" content="#B30000" />
+
+        <!-- Bootstrap -->
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" />
+    </head>
+    <body>
+
+        <style type="text/css">
+            .overlay {
+                position: fixed;
+                display: none;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 2;
+                background-color: rgba(0,0,0,0.5);
+                transition: 2s;
+            }
+
+            .overlay-box {
+                position: fixed;
+                width: 25%;
+                height: 25%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                vertical-align: central;
+                margin: auto;
+                padding: 12px;
+                border-radius: 6px;
+                background-color: rgba(255,255,255,0.8)
+            }
+
+            .overlay-submit-button {
+                position: fixed;
+                width: 25%;
+                height: 25%;
+                top: 40%;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                vertical-align: central;
+                margin: auto;
+            }
+
+            .overlay-exit-button {
+                position: fixed;
+                width: 25%;
+                height: 25%;
+                top: 80%;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                vertical-align: central;
+                margin: auto;
+            }
+
+            .overlay text {
+                position: absolute;
+                color: white;
+            }
+        </style>
+
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="{{session["url"]}}">{{session["app_title"]}}</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="{{session["url"]}}">Home</a>
+                        </li>
+                        {%for i in menu: %}
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
+                        </li>
+                        {%endfor%}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="text-center overlay" id="keycard_clear_success_overlay">
+            <div class="alert alert-success" role="alert" style="width: 80%; margin: auto; margin-top: 15%;">
+                <h4 class="alert-heading">
+                    Success
+                </h4>
+                <hr />
+                <p class="mb-0">
+                    Successfully removed all keycards associated with your account.
+                </p>
+            </div>
+            <div class="overlay-exit-button">
+                <button class="btn btn-primary btn-lg btn-block" style="width: 80%;" onclick="closeKeycardClearSuccessOverlay()">
+                    Exit
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center overlay" id="add_keycards_overlay">
+            <div class="overlay-box">
+                <form>
+                    <h5 style="margin-top: 20px;">Keycard:</h5><br />
+                    <input class="form-control" autocomplete="off" type="password" required id="new_keycard" placeholder="**********" maxlength="10" style="text-align:center;" />
+                </form>
+                <div class="overlay-submit-button">
+                    <button type="button" class="btn btn-primary btn-block" onclick="AddKeycardToAccount()">
+                        Add Keycard
+                    </button>
+                </div>
+
+            </div>
+            <div class="overlay-exit-button">
+                <button class="btn btn-primary btn-lg btn-block" style="width: 80%;" onclick="closeAddKeycardsOverlay()">
+                    Exit
+                </button>
+            </div>
+        </div>
+        <div class="text-center overlay" id="remove_keycards_overlay">
+            <div class="overlay-box">
+                <form>
+                    <h5 style="margin-top: 20px;">Keycard:</h5><br />
+                    <input class="form-control" autocomplete="off" type="password" required id="delete_keycard" placeholder="**********" maxlength="10" style="text-align:center;" />
+                </form>
+                <div class="overlay-submit-button">
+                    <button type="button" class="btn btn-primary btn-block" onclick="RemoveKeycardToAccount()">
+                        Remove Keycard
+                    </button>
+                </div>
+
+            </div>
+            <div class="overlay-exit-button">
+                <button class="btn btn-primary btn-lg btn-block" style="width: 80%;" onclick="closeRemoveKeycardsOverlay()">
+                    Exit
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center overlay" id="search_keycards_overlay">
+            <div class="overlay-box">
+                <form>
+                    <h5 style="margin-top: 20px;">Keycard:</h5><br />
+                    <input class="form-control" autocomplete="off" type="password" required id="search_keycard" placeholder="**********" maxlength="10" style="text-align:center;" />
+                </form>
+                <div id="search_result_box" style="margin-top: 20px;">
+                    <h6>
+                        Status: <strong id="search_keycard_result"></strong>
+                    </h6>
+                </div>
+                <div class="overlay-submit-button">
+                    <button type="button" class="btn btn-primary btn-block" onclick="ActiveKeycard()">
+                        Search Keycard
+                    </button>
+                </div>
+
+            </div>
+            <div class="overlay-exit-button">
+                <button class="btn btn-primary btn-lg btn-block" style="width: 80%;" onclick="closeSearchKeycardOverlay()">
+                    Exit
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center">
+
+            <!--
+            Keycard Items that should be here
+
+                - Add new Keycard
+                - Remove Existing Keycard
+                - Current Keycard Total
+        -->
+
+            <h1 class="display-4">
+                Account Settings
+            </h1>
+
+            <lead id="name_of_user">
+                {{session["first_name"]}} {{session["last_name"]}}
+            </lead>
+            <table class="table" style="width: 50%; margin: auto; margin-top: 50px; table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <h3>Account Settings</h3>
+                        </th>
+                        <th scope="col">
+                            <h3>Keycard Management</h3>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <label for="user_id">
+                                ID:
+                            </label>
+
+                            <input class="form-control" type="text" autocomplete="off" maxlength="20" id="user_id" value="{{user_details[0]}}" tabindex="-1" readonly style="text-align:center;" />
+                        </td>
+                        <td>
+                            <h5 style="margin-top: 14px;">
+                                Active Keycard: <span id="keycard_count">{{user_details[1]}}</span>
+                            </h5>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="first_name">
+                                First Name:
+                            </label>
+                            <input class="form-control" type="text" autocomplete="off" maxlength="20" id="first_name" placeholder="{{session["first_name"]}}" value="{{session["first_name"]}}" style="text-align:center;" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary bi bi-plus" style="margin-top: 12px;" id="add_keycard" onclick="AddKeycard()">
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="last_name">
+                                Last Name:
+                            </label>
+                            <input class="form-control" type="text" autocomplete="off" maxlength="20" id="last_name" placeholder="{{session["last_name"]}}" value="{{session["last_name"]}}" style="text-align:center;" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary bi bi-dash" style="margin-top: 12px;" id="remove_keycard" onclick="RemoveKeycard()">
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <label for="level">
+                                Permission Level:
+                            </label>
+                            <input class="form-control" type="text" autocomplete="off" maxlength="20" id="level" value="{{session["level"]}}" readonly tabindex="-1" style="text-align:center;" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary bi bi bi-x-circle-fill" style="margin-top: 6px; margin-bottom: 6px;" id="clear_keycards" onclick="ClearAccountKeycards()">
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <button type="button" class="btn btn-primary" onclick="UpdateAccount()">
+                                Save
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary bi bi-search" onclick="SearchKeycard()">
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <script type="text/javascript">
+            let session_url = window.location.href;
+            route = session_url.indexOf("account_settings")
+            session_url = session_url.slice(0, route)
+
+            function UpdateAccount() {
+                userID = document.getElementById("user_id");
+                firstName = document.getElementById("first_name");
+                lastName = document.getElementById("last_name");
+                valid = false;
+
+                if (firstName.value.length > 2) {
+                    valid = true;
+                }
+
+                if (lastName.value.length < 2) {
+                    valid = false;
+                }
+
+                let xml = new XMLHttpRequest();
+                let payload = new FormData();
+
+                payload.set("first_name", firstName.value);
+                payload.set("last_name", lastName.value);
+                payload.set("user_id", "current_account");
+
+                xml.open("POST", session_url + "change_account");
+                xml.responseType = "json";
+                xml.send(payload);
+
+                xml.onload = function () {
+                    const state = xml.response;
+                    const valid = state.success;
+
+                    if (valid) {
+                        firstName.placeholder = firstName.value;
+                        lastName.placeholder = lastName.value;
+
+                        document.getElementById("name_of_user").innerHTML = firstName.value + " " + lastName.value;
+
+                        alert("Successfully saved the changes to your account");
+                    } else {
+                        alert("Failed to save changes to your account.");
+                        firstName.value = "";
+                        lastName.value = "";
+                    }
+                }
+
+            }
+
+            function ClearAccountKeycards() {
+                let keycard_code = confirm("Please confirm you wish to remove all keycards associated with your account.");
+
+                if (keycard_code == null || keycard_code == "") {
+                    console.log("User cancelled request to delete all cards.");
+                } else {
+                    var req = new XMLHttpRequest();
+                    req.open("post", session_url + "/delete_keycards");
+                    req.responseType = "json";
+
+                    req.send();
+
+                    req.onload = function () {
+                        const state = req.response;
+                        const valid = state.success;
+
+                        if (valid == true) {
+                            document.getElementById("keycard_clear_success_overlay").style.display = "block";
+                            GetKeycardCount(true)
+                        } else {
+                            alert("Failed to delete keycards.");
+                        }
+                    }
+                }
+            }
+
+            function GetKeycardCount(update = false) {
+                var xml = new XMLHttpRequest()
+                xml.open("GET", session_url + "/keycard_count")
+                xml.responseType = "json";
+                xml.send()
+
+                xml.onload = function () {
+                    const state = xml.response;
+                    const valid = state.success;
+                    if (valid == true) {
+                        var count = state.value
+                        if (update == false) {
+                            return count;
+                        } else if (update == true) {
+                            countObj = document.getElementById("keycard_count");
+                            countObj.innerHTML = String(count);
+                        }
+
+                    } else {
+                        console.warn("Failed to get keycard count.");
+                        return null;
+                    }
+                }
+            }
+
+            function ActiveKeycard() {
+                resultElement = document.getElementById("search_keycard_result");
+                keycardID = String(document.getElementById("search_keycard").value);
+
+                if (keycardID.length != 10) {
+                    resultElement.innerHTML = "Invalid";
+                    return;
+                }
+
+                var xml = new XMLHttpRequest()
+                xml.open("GET", session_url + "/active_keycard?keycard=" + keycardID)
+                xml.responseType = "json";
+
+                xml.send();
+
+                xml.onload = function () {
+                    const state = xml.response;
+                    const success = state.success;
+
+                    if (success) {
+                        const active = state.value;
+                        var result;
+                        switch (active) {
+                            case true:
+                                result = "Active";
+                                break;
+                            default:
+                                result = "Inactive";
+                                break;
+                        }
+
+                        
+                        resultElement.innerHTML = result;
+                        document.getElementById("search_keycard").value = "";
+                    }
+                }
+            }
+
+            function AddKeycardToAccount() {
+                var newKeycard = String(document.getElementById("new_keycard").value);
+                if (newKeycard.length < 10) {
+                    alert("Please tap a valid keycard.");
+                    return;
+                }
+
+                let xml = new XMLHttpRequest();
+                xml.open("post", session_url + "/add_keycard?new_keycard=" + newKeycard);
+                xml.responseType = "json";
+                xml.send();
+
+                xml.onload = function () {
+                    const state = xml.response;
+                    const valid = state.success;
+
+                    document.getElementById("new_keycard").value = "";
+                    if (valid == true) {                        
+                        alert("Authorised new keycard to your account.");
+                        GetKeycardCount(true);
+                    } else {
+                        alert("Failed to add keycard.");
+                    }
+                }
+            }
+
+            function RemoveKeycardToAccount() {
+                var Keycard = String(document.getElementById("delete_keycard").value);
+                if (Keycard.length < 10) {
+                    alert("Please tap a valid keycard.");
+                    return;
+                }
+
+                let xml = new XMLHttpRequest();
+                xml.open("post", session_url + "/delete_keycard?keycard=" + Keycard);
+                xml.responseType = "json";
+                xml.send();
+
+                xml.onload = function () {
+                    const state = xml.response;
+                    const valid = state.success;
+
+                    document.getElementById("delete_keycard").value = "";
+
+                    if (valid == true) {
+                        alert("Removed keycard relation to your account.");
+                        GetKeycardCount(true);
+                    } else {
+                        alert("Failed to remove keycard.");
+                    }
+
+                }
+            }
+
+            function SearchKeycard() {
+                let overlay = document.getElementById("search_keycards_overlay");
+                overlay.style.display = "block";
+            }
+
+            function closeSearchKeycardOverlay() {
+                let overlay = document.getElementById("search_keycards_overlay");
+                overlay.style.display = "none";
+            }
+
+            function AddKeycard() {
+                let overlay = document.getElementById("add_keycards_overlay");
+
+                overlay.style.display = "block";
+            }
+
+            function closeAddKeycardsOverlay() {
+                let overlay = document.getElementById("add_keycards_overlay");
+                overlay.style.display = "none";
+            }
+
+            function RemoveKeycard() {
+                let overlay = document.getElementById("remove_keycards_overlay");
+                overlay.style.display = "block";
+            }
+
+            function closeRemoveKeycardsOverlay() {
+                let overlay = document.getElementById("remove_keycards_overlay");
+                overlay.style.display = "none";
+            }
+
+            function closeKeycardClearSuccessOverlay() {
+                overlay = document.getElementById("keycard_clear_success_overlay");
+                overlay.style.display = "none";
+            }
+
+
+            document.addEventListener("keypress", function (e) {
+                if (e.keyCode == 13) {
+                    switch (e.target) {
+                        case document.getElementById("new_keycard"):
+                            e.preventDefault();
+                            console.log("Blocked Key input");
+                            break;
+                        case document.getElementById("delete_keycard"):
+                            e.preventDefault();
+                            console.log("Blocked Key input");
+                            break;
+
+                        case document.getElementById("search_keycard"):
+                            e.preventDefault();
+                            console.log("Blocked Key input");
+                            break;
+                    }
+
+                }
+            })
+        </script>
+
+    </body>
+</html>
