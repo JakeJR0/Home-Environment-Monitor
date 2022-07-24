@@ -1,6 +1,6 @@
 # Sensors
 
-## Creating your own Sensors Instance
+## Creating your own Sensor Instance
 
 ### Required Items
 - 1 - 4: [ESP-8266](https://www.amazon.co.uk/gp/product/B08NJGVZVR/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1) 
