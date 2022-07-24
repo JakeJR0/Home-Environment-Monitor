@@ -10,7 +10,7 @@ python server.py
 ```
 
 Once the program is running the server should be setup, the server will work as intended but I would recommend
-that you setup a sensor for the server to use otherwise it will not work as intended. A link to the [Sensor Documentation](../MicroController/) which would be used
+that you setup a sensor for the server to use otherwise it will not work as intended. A link to the [Sensor Documentation](/./MicroControllers) which would be used
 to add a sensor.
 
 ### Login Details
