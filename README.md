@@ -28,5 +28,46 @@ In general with the current version of the system I do believe that the system i
 - Add [IFFT](https://ifttt.com/) integration to ensure that the system is only altering the environment when someone is at the house (To save electicity) 
 - Make the website more friendly for mobile users
 
+## Demonstation
+<h3>
+  <a href="http://188.34.166.212:8080/" target="_blank">
+    Live Server
+  </a>
+  <br><br>
+</h3>
+<table>
+  <thead>
+    <tr>
+      <th>
+        Temperature
+      </th>
+      <th>
+        Humidity
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <img src="http://188.34.166.212:8080/static/graphs/monthly_temp.png" alt="Temperature Monthly" width="500"/>
+      </td>
+      <td>
+        <img src="http://188.34.166.212:8080/static/graphs/monthly_hum.png"" alt="Temperature Monthly" width="500"/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="http://188.34.166.212:8080/static/graphs/hourly_temp.png" alt="Temperature Monthly" width="500"/>
+      </td>
+      <td>
+        <img src="http://188.34.166.212:8080/static/graphs/hourly_hum.png"" alt="Temperature Monthly" width="500"/>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
 ## Notice
 Please note that this project is still in development so some aspects of this project are not yet completed.
