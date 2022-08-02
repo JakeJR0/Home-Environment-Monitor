@@ -15,7 +15,7 @@ The plan for this project was to create a program that can store and help alter 
 
 Overall I wanted the system to:
 - Store Environment Data
-- Work with mutiple people / accounts
+- Work with multiple people / accounts
 - Control Smart Devices within the House
 - Act on the environment data acquired
 - Be user friendly
@@ -27,6 +27,7 @@ In general with the current version of the system I do believe that the system i
 - Add more devices to be controlled such as changing light colours
 - Add [IFFT](https://ifttt.com/) integration to ensure that the system is only altering the environment when someone is at the house (To save electicity) 
 - Make the website more friendly for mobile users
+- [Amazon](https://www.amazon.co.uk/) Alexa Intergration (Currently in progress)
 
 ## Demonstation
 <h3>
@@ -35,6 +36,10 @@ In general with the current version of the system I do believe that the system i
   </a>
   <br><br>
 </h3>
+
+### Live Graphs
+Note as these graphs are generated live, depending on the time you are viewing this page, due to this the graphs might look like they are broken at certain times in the day due to lack of data points.
+
 <table>
   <thead>
     <tr>
@@ -65,6 +70,7 @@ In general with the current version of the system I do believe that the system i
     </tr>
   </tbody>
 </table>
+
 
 
 
