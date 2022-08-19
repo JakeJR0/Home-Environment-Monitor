@@ -1,4 +1,10 @@
-﻿import json, os
+"""
+    File Name: server.py
+    Author: Jake JR
+    Github: JakeJR0
+"""
+
+import json, os
 from flask import Flask, session, render_template, redirect, request
 import storage, secrets
 import requests as server_requests
@@ -9,20 +15,53 @@ from matplotlib import pyplot as plt
 from datetime import datetime
 from flask_apscheduler import APScheduler
 
+# Creates the flask instance
 app = Flask(__name__)
+# Creates the instance scheduler
 app_schedule = APScheduler()
 
+# Configures the scheduler
 app_schedule.api_enabled = True
 app_schedule.init_app(app)
 
+# Sets up the Database
+
 db = storage.Database()
+
+# Creates some global variables
+# that are used within the site
+# These are set with defaults.
+
 sensors_active = True
 environment_modification = True
+
+# Initiates the wanted temperature
 bedroom_fan_minimum_temperature = 28
+
+# Sets as false as when the server starts
+# the system will turn it off using
+# IFFT webhook.
+
 fan_state = False
+
+# Creates a hashed random 1024 character secret
+# key which changes every time the server reboots.
+
 app.secret_key = storage.security.hash_password(secrets.token_hex(16))
 
 class MenusByPermissions:
+    """
+        This class is used to store the available
+        navigation options depending on the users 
+        permission level.
+
+        Menu by Levels:
+
+            Guest Menu: The user has not logged in.
+            Authorised Menu: The user has logged in and has a permission level of 4 or less.
+            Super User Menu: The user has logged in and has a permission level of 5 or higher.
+    """
+
     guest_menu = {
         "Graphs": "graphs",
         "Login": "login"
@@ -37,14 +76,32 @@ class MenusByPermissions:
     super_user_menu = {
         "Graphs": "graphs",
         "Sensor Management": "sensor_management",
+        "Security Management": "security_manager",
         "User Management": "user_management",
         "Account Settings": "account_settings",
         "Logout": "logout"    
     }
 
+
+# This sets the ifft webhook key.
 ifft_key = "R9gQkI_I1PPMu-LSox_OQ"
 
 def reset_sensors():
+    """
+        This is used to reset the sensors using an IFFT
+        webhook, please note the webhook will need to be configured
+        on IFFT for this to function as intended.
+
+        This will primarly be used to reboot the micro-controller when
+        it does not respond within 30 second, this could be due to an error
+        on the micro-controller side but it ensures that it continues to collect
+        data for the server.
+
+        Note:
+            The setup, I am currently using is with a Tapo smart plug which powers the
+            micro-controller.
+    """
+
     global ifft_key
     global sensors_active
     
@@ -52,36 +109,62 @@ def reset_sensors():
         print("Sensors are currently turned off.")
         return
     
-
+    # Builds the url to ping.
     base_url = "https://maker.ifttt.com/trigger/reset_sensors"
     token = f"/json/with/key/{ifft_key}"
     url_to_use = f"{base_url}{token}"
     
     try:
+        # Attempts to send a GET request to the server.
         server_requests.get(url_to_use)
     except TimeoutError:
         pass
 
 def home_fan_control(state=False):
+    """
+        This is used to change the state of the fan using an IFFT
+        webhook, please note the webhook will need to be configured
+        on IFFT for this to function as intended.
+
+        This will primarly be used to help cool the environment if the
+        temperature is above the requested temperature.
+
+        Note:
+            The setup, I am currently using is with a Tapo smart plug which powers the
+            micro-controller.
+    """
     global ifft_key
     global fan_state
+    
+    # Checks if the user has turned off
+    # modification.
+    
     if not environment_modification:
         print("Environment modification is turned off currently.")
         return
 
+    # This is building the webhook
+    # url with the needed parameters
     base_url = "https://maker.ifttt.com/trigger/bedroom_fan_"
     token = f"/json/with/key/{ifft_key}"
     url_to_use = ""
+
     if state == True:
         url_to_use = f"{base_url}on{token}"
+        
+        # Sets the fan state
         fan_state = True
+        
         print("Turning on bedroom fan to correct room temperature.")
     elif state == False:
         print("Turning off bedroom fan.")
         url_to_use = f"{base_url}off{token}"
+        # Sets the fan state
         fan_state = False
     if url_to_use != "":
         try:
+            # Sends the get request to the
+            # url.
             server_requests.get(url_to_use)
         except TimeoutError:
             pass
@@ -99,42 +182,84 @@ minimum_time = 15
 # Required number of readings
 readings_required = minimum_time / sensor_readings
 
+# This is used to create a heart beat
+# check with the micro-controller
+
 environment_sensor_interaction = None
 
 def add_environment_record(temperature=0.0, humidity=0.0):
+    """
+        The micro-controller uses this to record the temperature and humidity
+        of the environment.
+    """
+    
     global fan_over_minimum_count
     global fan_under_minimum_count
     global fan_state
     global readings_required
 
+    # Initializes the variables
     valid_temp = True
     valid_humidity = True
+    
+    # Checks if the temperature
+    # is within the range of the
+    # sensor used for the project (DHT22)
     
     if 80 > temperature < -40:
         valid_temp = False
         
+    # Checks if the humidity
+    # is within the range of the
+    # sensor used for the project (DHT22)
+    
     if 100 > humidity < 0:
         valid_humidity = False
     
+    # This ensures that the reading 
+    # is consistent before the system
+    # preforms an action.
+     
     if fan_over_minimum_count > readings_required: 
+        # Checks if the fan is in the wrong 
+        # state for the situation
         if fan_state == False:
+            # Turns on the home fan
             home_fan_control(True)
     elif fan_under_minimum_count > readings_required:
+        # Checks if the fan is in the wrong 
+        # state for the situation
         if fan_state == True:
+            # Turns off the home fan
             home_fan_control(False)
 
-
+    
+    # Records the amount of times that
+    # a reading is over or under 
+    # the wanted temperature.
+    
     if temperature >= bedroom_fan_minimum_temperature:
+        # Adds one to the count
         fan_over_minimum_count += 1
+        # Resets the count
         fan_under_minimum_count = 0
     else:
+        # Resets the count
         fan_over_minimum_count = 0
+        # Adds one to the count
         fan_under_minimum_count += 1
 
+    # Checks if the temperature and humidity is valid
+        
     if valid_temp and valid_humidity:
+        # Gets the database connection
+        
         con = db.con
         
+        # Creates the cursor
         cursor = con.cursor()
+        
+        # Inserts the temperature and humidity into the database
         cursor.execute('''
             INSERT INTO environment_record(
                 temperature,
@@ -143,11 +268,18 @@ def add_environment_record(temperature=0.0, humidity=0.0):
             VALUES(?, ?)
         ''', (temperature, humidity))
 
+        # Commits the changes to the database
         con.commit()
+        
         return True
     return False
 
 def get_menu():
+    """
+        This is used to get the correct menu for the user depending
+        on the users permission level.
+    """
+
     set_defaults()
     try:
         if session["authorised"] == True:
@@ -161,6 +293,9 @@ def get_menu():
         return MenusByPermissions.guest_menu
 
 def set_defaults():
+    """
+        This is used to set the default values for the session.
+    """
     try:
         if session["app_title"]:
             return
@@ -172,11 +307,18 @@ def set_defaults():
         session["level"] = 0
         session["view_data"] = False
         session["app_title"] = "Home Environment Monitor"
+        session["app_icon"] = "static/app_icon.svg"
+        session["app_logo"] = "static/app_logo_black.svg"
+        session["mode"] = "light"
         session["url"] = request.host_url
         session["id"] = None
 
 @app.route("/", methods=["GET", "POST"])
 def default():
+    """
+        This is the default page for the application.
+    """
+    
     set_defaults()
 
     if request.method == "POST":
@@ -202,8 +344,12 @@ def default():
                 "authorised": authorised
             })
 
+    # Creates the cursor
+    
     cursor = db.con.cursor()
 
+    # Gets the needed security data for the page.
+    
     security_sensor_info = cursor.execute('''
         SELECT
             ID,
@@ -213,11 +359,53 @@ def default():
     ''')
 
     
-
+    
     return render_template("index.html", menu=get_menu(), desired_temperature=bedroom_fan_minimum_temperature, security_sensor=security_sensor_info)
 
+@app.route("/toggle_page_mode")
+def toggle_page_mode():
+    """
+        This is used to toggle the page between light mode
+        and dark mode. 
+        
+        This is then stored within the session so the user's choice
+        will be remembered.
+    """
+
+    try:
+        mode = session["mode"]
+        
+        if mode.lower() == "dark":
+            session["mode"] = "light"
+        elif mode.lower() == "light":
+            session["mode"] = "dark"
+        else:
+            set_defaults()
+            return json.dumps({"success": False})
+
+        return json.dumps({
+                "success": True,
+                "mode": session["mode"]
+            })
+    except KeyError as key_error:
+        return json.dumps({
+                "success": False,
+                "message": key_error,
+                "error_type": "Key Error"
+            })
+    except Exception as e:
+        return json.dumps({
+                "success": False,
+                "error_message": e
+            })
+    
 @app.route("/change_account", methods=["GET", "POST"])
 def change_account():
+    """
+        This is used to change information 
+        about an account.
+    """
+
     set_defaults()
     
     try:
@@ -239,8 +427,6 @@ def change_account():
         if user_id == "current_account":
             user_id = session["id"]
             requires_auth = False
-
-        print(user_id)
 
         cur = db.con.cursor()
         result = cur.execute('''
@@ -305,8 +491,17 @@ def change_account():
                                 "message": "Please send a valid level"
                             })
 
-                    if str(level) == str(row[2]):
-                        print("This is the other")
+                    changes = False
+                    if str(level) != str(row[2]):
+                        changes = True
+
+                    if str(first_name) != str(row[0]):
+                        changes = True
+
+                    if str(last_name) != str(row[1]):
+                        changes = True
+
+                    if changes == False:
                         return json.dumps({
                                 "success": False,
                                 "message": "No change will happen."
@@ -455,7 +650,6 @@ def admin():
         set_defaults()
         return redirect("/login")
     manager_id = session["id"]
-    print(manager_id, type(manager_id))
     
     users = db.con.execute('''
         SELECT 
@@ -544,7 +738,6 @@ def security_report():
         status = str(json_data["status"])
         sensor_id = int(json_data["sensor_id"])
 
-        print(json_data)
         cur = db.con.cursor()
         valid_sensor = cur.execute('''
             SELECT
@@ -580,6 +773,54 @@ def security_report():
             return json.dumps({
                 "success": True
             })
+        
+    try:
+        state = request.args.get("state")
+        sensor_id = request.args.get("sensor_id")
+        
+        if state is None or sensor_id is None:
+            return json.dumps({
+                "success": False
+            })
+        
+        cur = db.con.cursor()
+        
+        valid_sensor = cur.execute('''
+            SELECT
+                ID
+            FROM
+                security_sensors
+            WHERE
+                ID=?
+        ''', (str(sensor_id)))
+        
+        valid = False
+
+        for i in valid_sensor:
+            valid = True
+
+        if valid == False:
+            return json.dumps({
+                "success": False
+            })
+
+        if state == "1" or state == "0":
+            cur.execute('''
+                INSERT INTO security_record(
+                    status,
+                    security_sensor
+                )
+                VALUES(?, ?)
+            ''', (state, sensor_id))
+            
+            db.save()
+            
+            return json.dumps({
+                "success": True
+            })
+        
+    except Exception as e:
+        print(e)
 
     return json.dumps({
         "success": False    
@@ -590,11 +831,6 @@ def security_report():
 def toggle_sensor():
     global sensors_active
     set_defaults()
-    try:
-        if session["authorised"] != True or session["level"] < 5:
-            return render_template("access_denied.html", menu=get_menu())
-    except KeyError:
-        return render_template("access_denied.html", menu=get_menu())
 
     if sensors_active == True:
         sensors_active = False
@@ -606,16 +842,91 @@ def toggle_sensor():
             "value": sensors_active
         })
 
+@app.route("/set_sensor", methods=["GET", "POST"]) # SET UP
+def set_sensor_state():
+    global sensors_active
+    set_defaults()
+    if request.method == "POST":
+        json_data = request.get_json()
+        json_data = json.loads(json_data)
+        state = bool(json_data["state"])
+    
+        sensors_active = state
+        return json.dumps({
+                "success": True,
+                "value": sensors_active
+            })
+
+    return json.dumps({
+            "success": False
+        })
+
+@app.route("/server_information")
+def server_info():
+    global sensors_active
+    global environment_modification
+    global bedroom_fan_minimum_temperature
+    
+    set_defaults()
+
+    data = {
+            "success": True,
+            "sensor_state": sensors_active,
+            "modification_state": environment_modification
+        }
+    
+    data = json.dumps(data)
+    
+    return data
+
+@app.route("/set_environment_modification", methods=["GET", "POST"])
+def set_environment_state():
+    global environment_modification
+    set_defaults()
+
+    if request.method == "POST":
+        json_data = request.get_json()
+        json_data = json.loads(json_data)
+        state = bool(json_data["state"])
+        if state == False:
+            if fan_state == True:
+                home_fan_control(False)
+        
+            environment_modification = False
+
+        elif state == True:
+            environment_modification = True
+
+            cursor = db.con.cursor()
+            result = cursor.execute('''
+                SELECT
+                    round(AVG(temperature), 2) AS average_temperature_rounded
+                FROM
+                    environment_record
+                ORDER BY
+                    ID DESC
+                LIMIT 5
+            ''')
+
+            for i in result:
+                if i[0] > bedroom_fan_minimum_temperature:
+                    home_fan_control(True)
+                else:
+                    home_fan_control(False)
+        
+
+        return json.dumps({
+                "success": True,
+                "value": environment_modification
+            })
+    return json.dumps({
+        "success": False
+        })
 
 @app.route("/toggle_environment_modification")
 def toggle_environment():
     global environment_modification
     set_defaults()
-    try:
-        if session["authorised"] != True or session["level"] < 5:
-            return render_template("access_denied.html", menu=get_menu())
-    except KeyError:
-        return render_template("access_denied.html", menu=get_menu())
 
     if environment_modification == True:
         if fan_state == True:
@@ -652,6 +963,7 @@ def toggle_environment():
 @app.route("/recent_security_information")
 def recent_security_sensor():
     cursor = db.con.cursor()
+
     sensor_data = cursor.execute('''
         SELECT
             security_sensors.ID,
@@ -660,35 +972,38 @@ def recent_security_sensor():
                 WHEN security_record.status = 0 THEN
                     'Open'
                 WHEN security_record.status = 1 THEN
-                    'Closed' 
-            END AS sensor_status
-        FROM
-            security_sensors,
+                    'Closed'
+                ELSE
+                    'Unknown'
+            END AS sensor_status,
+            security_record.ID
+       FROM
             security_record
-        ORDER BY 
-            security_record.ID DESC
-        LIMIT
-            (
-                SELECT
-                    COUNT(DISTINCT ID)
-                FROM
-                    security_sensors
-            )
+       INNER JOIN
+            security_sensors
+                ON
+            security_record.security_sensor = security_sensors.ID
+       ORDER BY
+            security_record.ID ASC
     ''')
+    
 
-    result = {
-        "success": True,
-        "value": {}
-    }
+    registered_sensors = {}
 
     for i in sensor_data:
-        result["value"][str(i[0])] = {
-            "nickname": str(i[1]),
-            "state": str(i[2])
-        }
-
-
+        if i[0] not in registered_sensors:
+            registered_sensors[str(i[0])] = {
+                "nickname": str(i[1]),
+                "status": str(i[2])
+            }
+        
+    result = {
+        "success": True,
+        "value": registered_sensors
+    }
+    
     return json.dumps(result)
+
 
 @app.route("/recent_sensor_information")
 def recent_sensor():
@@ -748,8 +1063,6 @@ def account_settings():
     for i in required_data:
         data.append(i[0])
         data.append(i[1])
-
-    print(required_data)
 
     return render_template("account_settings.html", menu=get_menu(), user_details=data)
 
@@ -839,8 +1152,6 @@ def add_keycard():
                 "success": False
             })
         
-        print(keycard)
-        
         if len(str(keycard)) == 10:
             existing_card = cursor.execute('''
                 SELECT 
@@ -917,9 +1228,7 @@ def delete_keycard():
             return json.dumps({
                 "success": False
             })
-        
-        print(keycard)
-        
+                
         rows = cursor.execute('''
             SELECT
                 ID
@@ -959,7 +1268,7 @@ def remove_export(file_name=""):
         sleep(30)
         os.remove(file_name)
 
-@app.route("/get_downloadable_sensor_data")
+@app.route("/get_downloadable_environment_data")
 def download_csv():
     set_defaults()
     failed_data = json.dumps({
@@ -982,7 +1291,7 @@ def download_csv():
     '''
     
     frame = pd.read_sql_query(data_query, db.con)
-    file_name = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
+    file_name = "environment_data-" + datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
     file_name += ".csv"
     frame.set_index("ID")
     file_name = f"static/data_exports/{file_name}"
@@ -996,8 +1305,350 @@ def download_csv():
             "success": True,
             "download": file_name
         })
-    
 
+@app.route("/get_downloadable_security_data")
+def download_security_csv():
+    set_defaults()
+    failed_data = json.dumps({
+            "success": False
+        })
+    try:
+        if session["authorised"] != True or session["level"] < 5:
+            return failed_data
+    except KeyError:
+        return failed_data
+
+    data_query = '''
+       SELECT
+            security_record.ID AS record_id,
+            security_sensors.ID AS sensor_id,
+            security_sensors.nickname AS sensor_name,
+            CASE 
+                WHEN security_record.status = 0 THEN
+                    'Open'
+                WHEN security_record.status = 1 THEN
+                    'Closed'
+                ELSE
+                    'Unknown'
+            END AS sensor_status,
+            strftime('%d/%m/%Y %H:%M:%S', security_sensors.registered_on) AS sensor_created_on,
+            strftime('%d/%m/%Y %H:%M:%S', security_record.occured_on) AS recorded_on
+       FROM
+            security_record
+       INNER JOIN
+            security_sensors
+                ON
+            security_record.security_sensor = security_sensors.ID
+    '''
+
+    frame = pd.read_sql_query(data_query, db.con)
+    file_name = "security_data-" + datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
+    file_name += ".csv"
+    frame.set_index("record_id")
+    file_name = f"static/data_exports/{file_name}"
+    frame.to_csv(file_name, index=False)
+
+    thr = Thread(target=remove_export, args=(file_name,))
+    thr.daemon = True
+    thr.start()
+
+    return json.dumps({
+            "success": True,
+            "download": file_name
+        })
+
+@app.route("/set_temperature", methods=["GET", "POST"])
+def set_temperature():
+    global bedroom_fan_minimum_temperature
+
+    set_defaults()
+    if request.method == "POST":
+        json_data = request.get_json()
+        json_data = json.loads(json_data)
+        temperature = float(json_data["temperature"])
+        
+        if temperature > 80:
+            return json.dumps({
+                "success": False
+            })
+        elif temperature < -40:
+            return json.dumps({
+                "success": False
+            })
+        else:
+            bedroom_fan_minimum_temperature = temperature
+            return json.dumps({
+                "success": True
+            })
+        
+    return json.dumps({
+                    "success": False
+                })
+
+@app.route("/security_manager")
+def security_manager():
+    set_defaults()
+    try:
+        if session["authorised"] != True or session["level"] < 5:
+            return render_template("access_denied.html", menu=get_menu())
+    except KeyError:
+        return render_template("access_denied.html", menu=get_menu())
+    
+    cur = db.con.cursor()
+
+    data = cur.execute('''
+        SELECT
+            ID,
+            nickname,
+            strftime("%d/%m/%Y", registered_on) AS registered_on
+        FROM
+            security_sensors
+    ''')    
+
+    return render_template("security_sensors.html", menu=get_menu(), security_sensor=data)
+
+@app.route("/add_security_sensor")
+def add_security_sensor():
+    set_defaults()
+    try:
+        if session["authorised"] != True or session["level"] < 5:
+            return render_template("access_denied.html", menu=get_menu())
+    except KeyError:
+        return render_template("access_denied.html", menu=get_menu())
+
+    nickname = request.args.get("name")
+    
+    if nickname == None or len(nickname) <= 2:
+        return json.dumps({
+                "success": False,
+                "messsage": "Invalid nickname"
+            })
+        
+    cur = db.con.cursor()
+    cur.execute('''
+        INSERT INTO security_sensors(nickname)
+        VALUES (?)
+    ''', (nickname,))
+    db.con.commit()
+    
+    return json.dumps({
+        "success": True
+        })
+
+@app.route("/remove_security_sensor")
+def remove_security_sensor():
+    set_defaults()
+    try:
+        if session["authorised"] != True or session["level"] < 5:
+            return render_template("access_denied.html", menu=get_menu())
+    except KeyError:
+        return render_template("access_denied.html", menu=get_menu())
+
+    sensor_id = request.args.get("sensor_id")
+
+    if sensor_id == None:
+        return json.dumps({
+                "success": False,
+                "message": "Invalid sensor id"
+            })
+    
+    cur = db.con.cursor()
+    
+    cur.execute('''
+        DELETE FROM security_sensors
+        WHERE 
+            ID = ?
+    ''', (sensor_id,))
+    
+    cur.execute('''
+        DELETE FROM security_record
+        WHERE 
+            security_sensor = ?
+    ''', (sensor_id,))
+
+    db.con.commit()
+    
+    return json.dumps({
+        "success": True
+        })
+
+@app.route("/delete_user")
+def delete_active_user():
+    set_defaults()
+    try:
+        if session["authorised"] != True or session["level"] < 5:
+            return render_template("access_denied.html", menu=get_menu())
+    except KeyError:
+        return render_template("access_denied.html", menu=get_menu())
+
+    user_id = request.args.get("account_id")
+
+    if user_id == None:
+        return json.dumps({
+                "success": False,
+                "message": "Invalid user id"
+            })
+    
+    
+    cur = db.con.cursor()
+    
+    user_details = cur.execute('''
+        SELECT
+            ID,
+            permission_level
+        FROM
+            managers
+        WHERE
+            ID = ?
+    ''', (user_id,))
+    
+    for i in user_details:
+        if i[1] == 10:
+            return json.dumps({
+                "success": False,
+                "message": "Cannot delete super user"
+            })
+        elif i[1] > session["level"]:
+            return json.dumps({
+                "success": False,
+                "message": "Insufficient permissions"
+            })
+    
+    cur.execute('''
+        DELETE 
+        FROM 
+            managers
+        WHERE 
+            ID = ?
+    ''', (user_id,))
+    
+    db.save()
+    
+    return json.dumps({
+        "success": True
+        })
+
+@app.route("/set_security_sensor_name")
+def edit_security_sensor():
+    set_defaults()
+    try:
+        if session["authorised"] != True or session["level"] < 5:
+            return render_template("access_denied.html", menu=get_menu())
+    except KeyError:
+        return render_template("access_denied.html", menu=get_menu())
+    
+    sensor_id = request.args.get("id")
+    sensor_name = request.args.get("name")
+    
+    if sensor_id == None or sensor_name == None or len(sensor_name) <= 2:
+        return json.dumps({
+                "success": False,
+                "message": "Invalid sensor id or name"
+            })
+    
+    cur = db.con.cursor()
+    cur.execute('''
+        UPDATE 
+            security_sensors
+        SET 
+            nickname = ?
+        WHERE 
+            ID = ?
+    ''', (sensor_name, sensor_id))
+    
+    db.save()
+    return json.dumps({
+        "success": True
+        })
+
+@app.route("/add_user", methods=["GET", "POST"])
+def add_new_user():
+    set_defaults()
+    try:
+        if session["authorised"] != True or session["level"] < 5:
+            return render_template("access_denied.html", menu=get_menu())
+    except KeyError:
+        return render_template("access_denied.html", menu=get_menu())
+    
+    if request.method == "POST":
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        level = request.form.get("level")
+        keycard = request.form.get("keycard")
+        
+        if len(first_name) <= 2:
+            return json.dumps({
+                "success": False,
+                "message": "Invalid first name"
+            })
+        
+        if len(last_name) <= 5:
+            return json.dumps({
+                "success": False,
+                "message": "Invalid last name"
+            })
+        
+        if level == None or int(level) < 1 or int(level) > 10:
+            return json.dumps({
+                "success": False,
+                "message": "Invalid level"
+            })
+        
+        if keycard == None or len(keycard) != 10:
+            return json.dumps({
+                "success": False,
+                "message": "Invalid keycard"
+            })
+        
+        if int(level) >= session["level"]:
+            return json.dumps({
+                "success": False,
+                "message": "Insufficient permissions"
+            })
+
+        cur = db.con.cursor()
+
+        valid_keycard = True
+
+        keycards = cur.execute('''
+            SELECT
+                ID
+            FROM
+                keycards
+        ''')
+
+        for i in keycards:
+            if storage.check_password_hash(i[0], keycard):
+                valid_keycard = False
+                break
+
+        if not valid_keycard:
+            return json.dumps({
+                "success": False,
+                "message": "Keycard already in use"
+            })
+            
+        keycard = storage.security.hash_password(keycard)
+        
+        cur.execute('''
+            INSERT INTO managers(first_name, last_name, permission_level)
+            VALUES (?, ?, ?)
+        ''', (first_name, last_name, level))
+
+        cur.execute('''
+            INSERT INTO keycards(ID, account_id)
+            VALUES (?, ?)
+        ''', (keycard, cur.lastrowid))
+        
+        db.save()
+        
+        return json.dumps({
+            "success": True
+            })
+        
+    return json.dumps({
+        "success": False
+        })
 
 @app.route("/logout")
 def logout():
@@ -1265,13 +1916,14 @@ def average_stat_by_week_humidity(show=True, export_file_name="monthly_hum"):
             
         plt.savefig(file_name)
         plt.close()
-
+    
 @app_schedule.task("interval", id="Daily_Graph", hours=24)
 def daily_graph():
+    
     average_stat_by_week_temperature(False)
     average_stat_by_week_humidity(False)
     print("Updated Daily Graphs")
-
+    
 @app_schedule.task("interval", id="Hourly_Graph", hours=1)
 def hour_graph():
     average_stat_by_day_temperature(False)
@@ -1325,7 +1977,6 @@ def clean_up_server():
     home_fan_control(False)
     get_record_count()
     sleep(5)
-
 
 if __name__ == "__main__":
     setup_server()
