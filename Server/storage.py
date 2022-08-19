@@ -69,7 +69,7 @@ class Database:
         
         con.execute('''
             CREATE TABLE IF NOT EXISTS managers(
-                ID INT PRIMARY KEY NOT NULL,
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 first_name CHAR(20) NOT NULL,
                 last_name CHAR(30) NOT NULL,
                 permission_level INT DEFAULT 1 NOT NULL
@@ -90,10 +90,6 @@ class Database:
                 humidity REAL NOT NULL,
                 occured_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        ''')
-        
-        con.execute('''
-            DROP TABLE security_sensors
         ''')
 
         con.execute('''
