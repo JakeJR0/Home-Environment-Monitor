@@ -1,104 +1,247 @@
 <!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta charset="utf-8" />
-        <title>{{session["app_title"]}} | User Management</title>
-        <!-- Main Tags -->
+    {% set page_name = "User Management" %}
+    {% include "standard_page.html" %}
+<body>
+    <style type="text/css">
+        .overlay {
+            position: fixed;
+            display: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+            background-color: rgba(0,0,0,0.5);
+            transition: 2s;
+        }
 
-        <meta name="title" content="{{session["app_title"]}} | User Management">
-        <meta name="description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+        .overlay-box {
+            position: fixed;
+            width: 25%;
+            height: 25%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            vertical-align: central;
+            margin: auto;
+            padding: 12px;
+            border-radius: 6px;
+            background-color: rgba(255,255,255,0.8)
+        }
 
-        <!-- Open Graph / Facebook -->
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="{{session["url"]}}">
-        <meta property="og:title" content="{{session["app_title"]}} | User Management">
-        <meta property="og:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+        .overlay-submit-button {
+            position: fixed;
+            width: 25%;
+            height: 25%;
+            top: 40%;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            vertical-align: central;
+            margin: auto;
+        }
 
-        <!-- Twitter -->
-        <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:url" content="{{session["url"]}}">
-        <meta property="twitter:title" content="{{session["app_title"]}} | User Management">
-        <meta property="twitter:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+        .overlay-exit-button {
+            position: fixed;
+            width: 25%;
+            height: 25%;
+            top: 80%;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            vertical-align: central;
+            margin: auto;
+        }
 
-        <!-- Mobile -->
+        .overlay text {
+            position: absolute;
+            color: white;
+        }
+    </style>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        <!-- Discord -->
-        <meta name="theme-color" content="#B30000" />
-
-        <!-- Bootstrap -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    </head>
-    <body>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" href="{{session["url"]}}">{{session["app_title"]}}</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+    <div class="text-center overlay" id="add_user_overlay">
+        <div class="overlay-box" style="width: 50%; height: 50%;">
+            <form style="margin-top: 20px;">
+                <p>First Name</p>
+                <input class="form-control" autocomplete="off" type="text" required id="new_user_first_name" placeholder="Jake" style="text-align:center;" /><br />
+                <p>Last Name</p>
+                <input class="form-control" autocomplete="off" type="text" required id="new_user_last_name" placeholder="James-Robinson" style="text-align:center;"  /><br />
+                <p>Permission Level</p>
+                <input class="form-control" autocomplete="off" type="number" required id="new_user_level" value="1" placeholder="1" min="1" max="{{session["level"] - 1}}" style="text-align:center;" /> <br />
+                <p>Keycard</p>
+                <input class="form-control" autocomplete="off" type="password" required id="new_user_keycard" placeholder="**********" maxlength="10" style="text-align:center;" /> <br />
+            </form>
+            <div class="overlay-submit-button" style="top: 64%;">
+                <button type="button" class="btn btn-primary btn-block" onclick="AddUserRequest()">
+                    Add User
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}">Home</a>
-                        </li>
-                        {%for i in menu: %}
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
-                        </li>
-                        {%endfor%}
-                    </ul>
-                </div>
             </div>
-        </nav>
 
-        <div class="text-center">
-            <h1 class="display-4">
-                Welcome to User Management,<br />{{session["first_name"]}}
-            </h1>
-
-            <p>
-                Within this area, you are able to manage the 
-                users that are able to access this site.
-
-            </p>
-
-            <br />
-            <br />
-            <table class="table" style="width: 80%; margin: auto;">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">First Name</th>
-                        <th scope="col">Last Name</th>
-                        <th scope="col">Level</th>
-                        <th scope="col">Active Keycards</th>
-                        <th scope="col">Change</th>
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {% for i in user_details: %}
-                        <tr>
-                            <th scope="row">{{i[0]}}</th>
-                            <td>{{i[1]}}</td>
-                            <td>{{i[2]}}</td>
-                            <td>{{i[3]}}</td>
-                            <td>{{i[4]}}</td>
-                            <td>
-                                <a class="btn btn-primary" href="{{session["url"]}}/modify_user?account_id={{i[0]}}">
-                                    <span class="bi bi-pen"></span>
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-
-            </table>
         </div>
+        <div class="overlay-exit-button">
+            <button class="btn btn-primary btn-lg btn-block" style="width: 80%; top: 90%;" onclick="closeAddUserOverlay()">
+                Exit
+            </button>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <h1 class="display-4">
+            Welcome to User Management,<br />{{session["first_name"]}}
+        </h1>
+
+        <p>
+            Within this area, you are able to manage the
+            users that are able to access this site.
+
+        </p>
+
+        <br />
+        <br />
+        <table class="table" style="width: 80%; margin: auto;">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">Level</th>
+                    <th scope="col">Active Keycards</th>
+                    <th scope="col">Change</th>
+                    <th scope="col">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for i in user_details: %}
+                <tr>
+                    <th scope="row">{{i[0]}}</th>
+                    <td>{{i[1]}}</td>
+                    <td>{{i[2]}}</td>
+                    <td>{{i[3]}}</td>
+                    <td>{{i[4]}}</td>
+                    <td>
+                        <a class="btn btn-primary" href="{{session["url"]}}modify_user?account_id={{i[0]}}">
+                            <span class="bi bi-pen"></span>
+                        </a>
+                    </td>
+                    <td>
+                        <a class="btn btn-danger" onclick="HandleDeleteRequest({{ i[0] }})">
+                            <span class="bi bi-x-circle"></span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         
-    </body>
+        <table class="table" style="margin-top: 50px; border: 0;">
+            <thead style="border: 0;">
+                <tr style="border: 0;">
+                    <th style="border: 0;">
+                        Add New User
+                    </th>
+                </tr>
+            </thead>
+            <tbody style="border: 0;">
+                <tr style="border: 0;">
+                    <td style="border: 0;">
+                        <button class="btn btn-primary bi bi-plus-circle" onclick="ShowAddUserOverlay()">
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <script type="text/javascript">
+
+            function ShowAddUserOverlay() {
+                let overlay = document.getElementById("add_user_overlay");
+                overlay.style.display = "block";
+            }
+
+            function closeAddUserOverlay() {
+                let overlay = document.getElementById("add_user_overlay");
+                overlay.style.display = "none";
+            }
+
+            function GetElementValue(elementName) {
+                element = document.getElementById(elementName);
+                return element.value;
+            }
+            
+
+            function AddUserRequest() {
+                let firstName = GetElementValue("new_user_first_name");
+                let lastName = GetElementValue("new_user_last_name");
+                let level = GetElementValue("new_user_level");
+                let keycard = GetElementValue("new_user_keycard");
+
+                let xml = new XMLHttpRequest();
+                let data = new FormData();
+
+                data.set("first_name", firstName);
+                data.set("last_name", lastName);
+                data.set("level", level);
+                data.set("keycard", keycard);
+
+                xml.open("post", session_url + "add_user");
+                xml.responseType = "json";
+                xml.send(data);
+
+                xml.onload = function () {
+                    try {
+                        res = xml.response;
+                        if (res.success == true) {
+                            window.location.reload();
+                        } else {
+                            alert("Failed to add new user.");
+                        }
+                    } catch (e) {
+                        alert("Failed to add new user due to an error.");
+                        console.warn("Add new user error: ", e);
+                    }
+                }
+            }
+
+            function HandleDeleteRequest(accountID) {
+                result = confirm("Are you sure you wish to delete the account with ID: " + String(accountID) + "?");
+                if (result == true) {
+                    var xml = new XMLHttpRequest()
+
+                    xml.open("get", session_url + "delete_user?account_id=" + String(accountID));
+                    xml.responseType = "json";
+                    xml.send();
+
+                    xml.onload = function () {
+                        data = xml.response;
+
+                        try {
+                            success = data.success;
+
+                            if (success == true) {
+                                alert("Account with ID: " + String(accountID) + " has been removed.");
+
+                                window.location.reload(true);
+                            } else {
+                                alert("Failed to delete account with ID: " + String(accountID));
+                            }
+                        } catch (e) {
+                            alert("Failed to delete account with ID: " + String(accountID));
+                            console.warn("Delete request with error: ", e);
+                        }
+
+                    }
+                } else {
+                    console.log("User cancelled request to delete account with ID: ", accountID);
+                }
+            }
+        </script>
+    </div>
+
+</body>
 </html>
