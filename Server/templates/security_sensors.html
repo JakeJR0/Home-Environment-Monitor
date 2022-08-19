@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    {% set page_name = "Security Sensors" %}
+    {% include "standard_page.html" %}
+    
+    <body>
+        <style type="text/css">
+            .overlay {
+                position: fixed;
+                display: none;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 2;
+                background-color: rgba(0,0,0,0.5);
+                transition: 2s;
+            }
+
+            .overlay-box {
+                position: fixed;
+                width: 25%;
+                height: 25%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                vertical-align: central;
+                margin: auto;
+                padding: 12px;
+                border-radius: 6px;
+                background-color: rgba(255,255,255,0.8)
+            }
+
+            .overlay-submit-button {
+                position: fixed;
+                width: 25%;
+                height: 25%;
+                top: 40%;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                vertical-align: central;
+                margin: auto;
+            }
+
+            .overlay-exit-button {
+                position: fixed;
+                width: 25%;
+                height: 25%;
+                top: 80%;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                vertical-align: central;
+                margin: auto;
+            }
+
+            .overlay text {
+                position: absolute;
+                color: white;
+            }
+        </style>
+
+        <br /><br />
+
+        <div class="text-center overlay" id="add_sensor_overlay">
+            <div class="overlay-box">
+                <form>
+                    <h5 style="margin-top: 20px;">Sensor Name:</h5><br />
+                    <input class="form-control" autocomplete="off" type="text" id="add_sensor_name" placeholder="Sensor Name" />
+                </form>
+                <div class="overlay-submit-button">
+                    <button type="button" class="btn btn-primary btn-block" onclick="AddSensor()">
+                        Add Sensor
+                    </button>
+                </div>
+
+            </div>
+            <div class="overlay-exit-button">
+                <button class="btn btn-primary btn-lg btn-block" style="width: 80%;" onclick="closeAddSensorOverlay()">
+                    Exit
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center overlay" id="change_sensor_name_overlay">
+            <div class="overlay-box">
+                <form>
+                    <span id="sensor_id_to_change" style="display: none;"></span>
+                    <h5 style="margin-top: 20px;">New Sensor Name:</h5><br />
+                    <input class="form-control" autocomplete="off" type="text" id="change_sensor_name" placeholder="Sensor Name" />
+                </form>
+                <div class="overlay-submit-button">
+                    <button type="button" class="btn btn-primary btn-block" onclick="SensorChangeName()">
+                        Change Sensor Name
+                    </button>
+                </div>
+
+            </div>
+            <div class="overlay-exit-button">
+                <button class="btn btn-primary btn-lg btn-block" style="width: 80%;" onclick="closeChangeSensorNameOverlay()">
+                    Exit
+                </button>
+            </div>
+        </div>
+
+
+        <div class="text-center">
+            <h1 class="display-4">{{session["app_title"]}}</h1>
+            <br /><br />
+            {% if session["authorised"]: %}
+            <h3>
+                Welcome to Security Management<br />{{session["first_name"]}}
+            </h3>
+            {% else: %}
+            <h3>
+                Welcome to Security Management<br />
+            </h3>
+            {% endif %}
+
+            <br /><br />
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Sensor ID
+                        </th>
+                        <th>
+                            Sensor Name
+                        </th>
+                        <th>
+                            Sensor State
+                        </th>
+                        <th>
+                            Edit
+                        </th>
+                        <th>
+                            Delete
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in security_sensor: %}
+                    <tr id="sensor_{{i[0]}}_row">
+                        <td>
+                            {{i[0]}}
+                        </td>
+                        <td>
+                            {{i[1]}}
+                        </td>
+                        <td id="sensor_{{i[0]}}_state">
+                            Loading
+                        </td>
+                        <td>
+                            <a class="btn btn-primary bi bi-pen" onclick="DirectUserToEdit{{ i[0] }}()">
+                                <script type="text/javascript">
+                                        function DirectUserToEdit{{ i[0] }} () {
+                                            ShowChangeSensorNameOverlay({{ i[0] }});
+                                        }
+                                </script>
+                            </a>
+                        </td>
+                        <td>
+                            <a class="btn btn-danger bi bi-x-circle" onclick="sensor_{{ i[0] }}_delete()">
+                                <script type="text/javascript">
+                                        function sensor_{{ i[0] }}_delete() {
+                                            sensor_delete({{ i[0] }})
+                                        }
+                                </script>
+                            </a>
+                        </td>
+                    </tr>
+
+
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <table class="table" style="margin-top:100px; border: 0;">
+                <thead style="border: 0;">
+                    <tr style="border: 0;">
+                        <th style="border: 0;">
+                            Add New Sensor
+                        </th>
+                    </tr>
+                </thead>
+                <tbody style="border: 0;">
+                    <tr style="border: 0;">
+                        <td style="border: 0;">
+                            <button class="btn btn-primary bi bi-plus-circle" onclick="ShowSensorOverlay()">
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script type="text/javascript">
+            function SetCardClass(elementName, cardClass) {
+                card = document.getElementById(elementName);
+
+                if (card.classList.contains("bg-primary") || cardClass != "bg-primary") {
+                    card.classList.remove("bg-primary");
+                }
+
+                if (card.classList.contains("bg-warning") || cardClass != "bg-warning") {
+                    card.classList.remove("bg-warning");
+                }
+
+                if (card.classList.contains("bg-danger") || cardClass != "bg-danger") {
+                    card.classList.remove("bg-danger");
+                }
+
+                if (card.classList.contains("bg-dark") || cardClass != "bg-dark") {
+                    card.classList.remove("bg-dark");
+                }
+
+                if (card.classList.contains("bg-info") || cardClass != "bg-info") {
+                    card.classList.remove("bg-info");
+                }
+
+                if (card.classList.contains("bg-secondary") || cardClass != "bg-secondary") {
+                    card.classList.remove("bg-secondary");
+                }
+
+                card.classList.add(cardClass);
+            }
+
+            function sensor_delete(sensor_id) {
+
+                let result = confirm("Are you sure you wish to delete the security sensor with ID: " + String(sensor_id) + "?");
+                if (result != true) {
+                    console.log("Sensor Delete request cancelled.")
+                    return;
+                }
+
+                let xml = new XMLHttpRequest();
+                xml.open("get", session_url + "remove_security_sensor?sensor_id=" + String(sensor_id))
+                xml.responseType = "json";
+                xml.send();
+
+                xml.onload = function () {
+                    data = xml.response;
+                    try {
+                        if (data.success == false) {
+                            console.warn("Failed to remove security sensor " + String(sensor_id));
+                            alert("Failed to remove security sensor with ID: " + String(sensor_id));
+                        } else {
+                            alert("Removed the security sensor and the sensor data.");
+                            window.location.reload();
+                        }
+                    } catch (e) {
+                        console.warn("Failed to remove security sensor " + String(sensor_id) + " with error: ", e);
+                        alert("Failed to remove security sensor with ID: " + String(sensor_id));
+                    }
+
+                }
+            }
+
+            function UpdateSensorData() {
+                let xml = new XMLHttpRequest();
+                xml.open("get", session_url + "recent_security_information");
+                xml.responseType = "json";
+                xml.send()
+                xml.onload = function () {
+                    const data = xml.response;
+                    const success = data.success;
+
+                    if (success == false) {
+                        console.warn("Failed to get sensor data.")
+                        return;
+                    }
+
+                    let sensor_data = data.value;
+
+                    for (sensor_id in sensor_data) {
+                        try {
+                            let data = sensor_data[sensor_id];
+                            let elementName = "sensor_" + String(sensor_id) + "_state";
+                            let element = document.getElementById(elementName);
+                            element.innerHTML = data.status;
+                        } catch (e) {
+                            console.warn("Sensor Update Error: ", e);
+                        }
+                    }
+                }
+            }
+
+            sensorAddCooldown = false;
+
+            function SensorAddCooldownEnded() {
+                sensorAddCooldown = false;
+            }
+
+            function SensorChangeName() {
+
+                let nickname = document.getElementById("change_sensor_name").value;
+                let sensor_to_change = document.getElementById("sensor_id_to_change").innerHTML;
+
+                if (nickname.length <= 2) {
+                    console.log(nickname);
+                    console.log("User attempted to change a sensor with a name with less than or equal to 2 characters");
+                    alert("Please enter a longer sensor name.");
+                    return;
+                }
+
+                let xml = new XMLHttpRequest();
+                xml.open("get", session_url + "set_security_sensor_name?id=" + String(sensor_to_change) + "&name=" + String(nickname));
+                xml.responseType = "json";
+                xml.send();
+
+                xml.onload = function () {
+                    try {
+                        const data = xml.response;
+                        const success = data.success;
+
+                        if (success == true) {
+                            alert("Changed the sensors name.");
+                            window.location.reload();
+                        } else {
+                            alert("Failed to change sensor name in the system.");
+                        }
+                    } catch (e) {
+                        alert("Failed to change sensor name in the system.");
+                        console.warn("Sensor Name Change Error: \n", e);
+                    }
+                }
+            }
+
+            function AddSensor() {
+                if (sensorAddCooldown == true) {
+                    return;
+                }
+
+                sensorAddCooldown = true;
+
+                let nickname = document.getElementById("add_sensor_name").value;
+
+                if (nickname.length <= 2) {
+                    console.log(nickname);
+                    console.log("User attempted to add a sensor with a name with less than or equal to 2 characters");
+                    alert("Please enter a longer sensor name.");
+                    return;
+                }
+
+                let xml = new XMLHttpRequest();
+                xml.open("get", session_url + "add_security_sensor?name=" + String(nickname));
+                setInterval(SensorAddCooldownEnded, 2000);
+                xml.responseType = "json";
+                xml.send();
+
+                xml.onload = function () {
+                    try {
+                        const data = xml.response;
+                        const success = data.success;
+
+                        if (success == true) {
+                            alert("Added new sensor to the system.");
+                            window.location.reload();
+                        } else {
+                            alert("Failed to add new sensor to the system.");
+                        }
+                    } catch (e) {
+                        alert("Failed to add new sensor to the system.");
+                        console.warn("Sensor Add Error: \n", e);
+                    }
+                }
+            }
+
+            function closeChangeSensorNameOverlay() {
+                let sensor_to_change = document.getElementById("sensor_id_to_change");
+                let overlay = document.getElementById("change_sensor_name_overlay");
+                sensor_to_change.innerHTML = "";
+                overlay.style.display = "none";
+            }
+
+            function ShowChangeSensorNameOverlay(sensor_id) {
+                let sensor_to_change = document.getElementById("sensor_id_to_change");
+                let overlay = document.getElementById("change_sensor_name_overlay");
+                sensor_to_change.innerHTML = String(sensor_id);
+                overlay.style.display = "block";
+            }
+            
+            function ShowSensorOverlay() {
+                let overlay = document.getElementById("add_sensor_overlay");
+                overlay.style.display = "block";
+            }
+
+            function closeAddSensorOverlay() {
+                let overlay = document.getElementById("add_sensor_overlay");
+                overlay.style.display = "none";
+            }
+
+            setInterval(UpdateSensorData, 2000);
+        </script>
+
+    </body>
+</html>
