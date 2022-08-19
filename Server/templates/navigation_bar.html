@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<body>
+    {% if session["mode"] == "light": %}
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <div class="container">
+            {% if session["app_logo"] != "": %}
+            <a class="navbar-brand" href="{{session["url"]}}">
+                <img src="{{session["app_logo"]}}" alt="Logo" width="50" height="50" />
+            </a>
+
+            {% else: %}
+            <a class="navbar-brand" style="color: white;" href="{{session["url"]}}">{{session["app_title"]}}</a>
+            {% endif %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{session["url"]}}">Home</a>
+                    </li>
+                    {%for i in menu: %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
+                    </li>
+                    {%endfor%}
+                </ul>
+            </div>
+        </div>
+        <div style="padding-right: 12px;">
+            {% if session["mode"] == "dark": %}
+            <button class="btn btn-warning bi bi-brightness-high" onclick="HandleModeToggle()">
+            </button>
+            {% elif session["mode"] == "light": %}
+            <button class="btn btn-dark bi bi bi-moon" onclick="HandleModeToggle()">
+            </button>
+            {% endif %}
+        </div>
+    </nav>
+    {% elif session["mode"] == "dark": %}
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" style="background-color: #27292B; ">
+        <div class="container">
+            {% if session["app_logo"] != "": %}
+            <a class="navbar-brand" href="{{session["url"]}}">
+                <img src="{{session["app_logo"]}}" alt="Logo" width="50" height="50" />
+            </a>
+
+            {% else: %}
+            <a class="navbar-brand" style="color: white;" href="{{session["url"]}}">{{session["app_title"]}}</a>
+            {% endif %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{session["url"]}}">Home</a>
+                    </li>
+                    {%for i in menu: %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
+                    </li>
+                    {%endfor%}
+                </ul>
+            </div>
+        </div>
+        <div style="padding-right: 12px;">
+            {% if session["mode"] == "dark": %}
+            <button class="btn btn-warning bi bi-brightness-high" style="color: black;" onclick="HandleModeToggle()">
+            </button>
+            {% elif session["mode"] == "light": %}
+            <button class="btn btn-dark bi bi bi-moon" onclick="HandleModeToggle()">
+            </button>
+            {% endif %}
+        </div>
+
+
+    </nav>
+    {% endif %}
+
+    <script type="text/javascript">
+        /*
+         * This is used to control the toggling of
+         * light and dark mode on all pages.
+        */
+
+        function HandleModeToggle() {
+            let xml = new XMLHttpRequest();
+            xml.open("GET", session_url + "/toggle_page_mode")
+            xml.responseType = "json";
+            xml.send();
+
+            xml.onload = function () {
+                try {
+                    let data = xml.response;
+                    let success = data.success;
+
+                    if (success == true) {
+                        window.location.reload(true);
+                    }
+                } catch (e) {
+                    console.warn(e);
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>

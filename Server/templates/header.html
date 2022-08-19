@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <title>{{session["app_title"]}} | {{page_name}}</title>
+        <!-- Main Tags -->
+        {% if session["app_icon"] != "": %}
+        <link rel="icon" type="image/svg" href="{{session["app_icon"]}}" />
+        {% endif %}
+
+        <meta name="title" content="{{session["app_title"]}} | {{page_name}}">
+        <meta name="description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{session["url"]}}">
+        <meta property="og:title" content="{{session["app_title"]}} | {{page_name}}">
+        <meta property="og:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="{{session["url"]}}">
+        <meta property="twitter:title" content="{{session["app_title"]}} | {{page_name}}">
+        <meta property="twitter:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
+
+        <!-- Mobile -->
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- Discord -->
+        <meta name="theme-color" content="#B30000" />
+
+        <!-- Bootstrap -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    </head>
+    <body>
+        <script type="text/javascript">
+            var session_url = ""
+            function updateSessionUrl() {
+                console.log("THIS IS THE SESSION URL", session_url);
+                console.log("{{ page_name }}")
+            }
+
+            setTimeout(updateSessionUrl, 2000)
+        </script>
+
+        <style>
+            body * {
+                
+                font-family: "AirbnbCereal", "Cereal";
+
+                {% if session["mode"] == "dark": %}
+                color: white;
+                {% endif %}
+            }
+
+            body input {
+                color: black;
+            } 
+
+            .navbar * {
+                color: white;
+            }
+
+            body {
+                {% if session["mode"] == "dark": %}
+                background-color: #202529;
+                {% endif %}
+            }
+
+            .btn {
+                box-shadow: 1px 5px 1px #16191C;
+            }
+
+            .card {
+                box-shadow: 1px 5px 1px #16191C;
+            }
+
+            .navbar-nav .nav-item.active .nav-link,
+            .navbar-nav .nav-item:hover .nav-link {
+                color: #3d7cea;
+            }
+
+            {% if session["mode"] == "dark": %}
+
+            {% if page_name == "Security Sensors" %}
+            /*
+                The security sensors page should have borders on the table.
+            */
+            {% elif page_name == "User Management": %}
+            /*
+                The user management page should have borders on the table.
+            */
+            {% else: %}
+            .table * {
+                border: 0;
+            }
+            {% endif %}
+
+            {% elif session["mode"] == "light" %}
+            .navbar {
+                background-color: #202529;
+            }        
+
+            .navbar * {
+                color: white;
+            }
+            {% endif %}
+            
+        </style>
+    </body>
+</html>
