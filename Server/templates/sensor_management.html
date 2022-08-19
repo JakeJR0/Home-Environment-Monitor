@@ -1,60 +1,10 @@
 <!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta charset="utf-8" />
-        <title>{{session["app_title"]}} | Sensor Management</title>
-        <!-- Main Tags -->
-
-        <meta name="title" content="{{session["app_title"]}} | Sensor Management">
-        <meta name="description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Open Graph / Facebook -->
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="{{session["url"]}}">
-        <meta property="og:title" content="{{session["app_title"]}} | Sensor Management">
-        <meta property="og:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Twitter -->
-        <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:url" content="{{session["url"]}}">
-        <meta property="twitter:title" content="{{session["app_title"]}} | Sensor Management">
-        <meta property="twitter:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Mobile -->
-
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        <!-- Discord -->
-        <meta name="theme-color" content="#B30000" />
-
-        <!-- Bootstrap -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    </head>
+    {% set page_name = "Sensor Management" %}
+    {% include "standard_page.html" %}
+    
     <body>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" href="{{session["url"]}}">{{session["app_title"]}}</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}">Home</a>
-                        </li>
-                        {%for i in menu: %}
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
-                        </li>
-                        {%endfor%}
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        
         <div class="text-center">
             <h1 class="display-4">
                 Welcome to Sensor Management,<br />{{session["first_name"]}}
@@ -69,10 +19,6 @@
             <br />
 
             <script type="text/javascript">
-                let session_url = window.location.href;
-                route = session_url.indexOf("sensor_management")
-                session_url = session_url.slice(0, route)
-
                 function toggleSensorState() {
                     let xhr = new XMLHttpRequest();
                     xhr.open("get", session_url + "/toggle_sensor")
@@ -125,7 +71,37 @@
 
                     }
                 }
+                
+                function SetCardClass(elementName, cardClass) {
+                    card = document.getElementById(elementName);
 
+                    if (card.classList.contains("bg-primary") || cardClass != "bg-primary") {
+                        card.classList.remove("bg-primary");
+                    }
+
+                    if (card.classList.contains("bg-warning") || cardClass != "bg-warning") {
+                        card.classList.remove("bg-warning");
+                    }
+
+                    if (card.classList.contains("bg-danger") || cardClass != "bg-danger") {
+                        card.classList.remove("bg-danger");
+                    }
+
+                    if (card.classList.contains("bg-dark") || cardClass != "bg-dark") {
+                        card.classList.remove("bg-dark");
+                    }
+
+                    if (card.classList.contains("bg-info") || cardClass != "bg-info") {
+                        card.classList.remove("bg-info");
+                    }
+
+                    if (card.classList.contains("bg-secondary") || cardClass != "bg-secondary") {
+                        card.classList.remove("bg-secondary");
+                    }
+
+                    card.classList.add(cardClass);
+                }
+                
                 function updateStats() {
                     let httpReq = new XMLHttpRequest()
                     httpReq.open("get", session_url + "/recent_sensor_information")
@@ -148,6 +124,28 @@
                         temperature_button = document.getElementById("temperature");
                         humidity_button = document.getElementById("humidity");
 
+                        temperature_class = ""
+                        humidity_class = ""
+
+                        if (temperature >= 29) {
+                            temperature_class = "bg-danger";
+                        } else if (temperature < 29 || temperature > 24) {
+                            temperature_class = "bg-primary";
+                        } else {
+                            temperature_class = "bg-success";
+                        }
+
+                        if (humidity >= 60) {
+                            humidity_class = "bg-danger";
+                        } else if (humidity < 60 || temperature > 50) {
+                            humidity_class = "bg-primary";
+                        } else {
+                            humidity_class = "bg-success"
+                        }
+
+                        SetCardClass("temperature_card", temperature_class);
+                        SetCardClass("humidity_card", humidity_class);
+                        
                         temperature_button.innerHTML = temperature + "°C";
                         humidity_button.innerHTML = humidity + "%";
 
@@ -164,13 +162,13 @@
                     <thead>
                         <tr>
                             <th scope="col">
-                                <div class="card text-white bg-primary mb-3">
+                                <div class="card text-white bg-primary mb-3" id="temperature_card">
                                     <div class="card-title">Current Temperature</div>
                                     <div class="card-text" id="temperature">Loading...</div>
                                 </div>
                             </th>
                             <th scope="col">
-                                <div class="card text-white bg-primary mb-3">
+                                <div class="card text-white bg-primary mb-3" id="humidity_card">
                                     <div class="card-title">Current Humidity</div>
                                     <div class="card-text" id="humidity">Loading...</div>
                                 </div>
