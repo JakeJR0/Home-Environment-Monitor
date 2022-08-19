@@ -1,60 +1,10 @@
 <!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta charset="utf-8" />
-        <title>{{session["app_title"]}} | Modify</title>
-        <!-- Main Tags -->
+    {% set page_name = "Edit {{user_details[1]}}'s Account'" %}
+    {% include "standard_page.html" %}
 
-        <meta name="title" content="{{session["app_title"]}} | Modify">
-        <meta name="description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Open Graph / Facebook -->
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="{{session["url"]}}">
-        <meta property="og:title" content="{{session["app_title"]}} | Modify">
-        <meta property="og:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Twitter -->
-        <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:url" content="{{session["url"]}}">
-        <meta property="twitter:title" content="{{session["app_title"]}} | Modify">
-        <meta property="twitter:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Mobile -->
-
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        <!-- Discord -->
-        <meta name="theme-color" content="#B30000" />
-
-        <!-- Bootstrap -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    </head>
     <body>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" href="{{session["url"]}}">{{session["app_title"]}}</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}">Home</a>
-                        </li>
-                        {%for i in menu: %}
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
-                        </li>
-                        {%endfor%}
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
         <div class="text-center">
             <h1 class="display-4" id="name_of_user">{{user_details[1]}} {{user_details[2]}}</h1>
             <br /><br />
@@ -71,7 +21,7 @@
 
             <br />
 
-
+            <!--
             <div class="form-group" style="display:none;">
                 <label for="user_id" class="control-label col-sm-2">User ID:</label>
                 <input id="user_id" value="{{ user_details[0] }}" readonly />
@@ -88,8 +38,68 @@
                 <label for="level" class="control-label col-sm-2">Level:</label>
                 <input name="level" type="number" placeholder="{{ user_details[3] }}" value="{{ user_details[3] }}" id="level" style="text-align: center;" />
             </div>
-
+            -->
+            <table class="table" style="width: 25%; margin: auto;">
+                <tbody>
+                    <tr>
+                        <th>
+                            Account ID:
+                        </th>
+                        <td>
+                            <input id="user_id" value="{{user_details[0]}}"  style="text-align: center;"  readonly />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            First Name:
+                        </th>
+                        <td>
+                            <input id="first_name" type="text" placeholder="{{ user_details[1] }}" value="{{ user_details[1] }}" name="first_name" style="text-align: center;" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Last Name:
+                        </th>
+                        <td>
+                            <input id="last_name" type="text" placeholder="{{ user_details[2] }}" value="{{ user_details[2] }}" name="last_name" style="text-align: center;" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Permission Level:
+                        </th>
+                        <td>
+                            <input name="level" type="number" placeholder="{{ user_details[3] }}" value="{{ user_details[3] }}" id="level" style="text-align: center;" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             <br /><br /><br />
+            {% if True == False: %}
+            <table class="table" style="width: 25%; margin: auto;">
+                <thead>
+                    <tr>
+                        <th>
+                            Add Keycard
+                        </th>
+                        <th>
+                            Remove Keycard
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <button class="btn btn-primary bi bi-plus-circle"></button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger bi bi-x-circle"></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
             <table style="margin: auto; table-layout: fixed; border-collapse: separate; border-spacing: 20px 100px; ">
                 <thead>
                     <tr>
@@ -114,9 +124,6 @@
         </div>
 
         <script type="text/javascript">
-            let session_url = window.location.href;
-            route = session_url.indexOf("modify_user")
-            session_url = session_url.slice(0, route)
 
             function ReturnToAdminPage() {
                 userID = document.getElementById("user_id");
