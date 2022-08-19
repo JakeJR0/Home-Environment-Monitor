@@ -1,59 +1,9 @@
 <!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta charset="utf-8" />
-        <title>{{session["app_title"]}} | Graphs Page</title>
-        <!-- Main Tags -->
-
-        <meta name="title" content="{{session["app_title"]}} | Graphs Page">
-        <meta name="description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Open Graph / Facebook -->
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="{{session["url"]}}">
-        <meta property="og:title" content="{{session["app_title"]}} | Graphs Page">
-        <meta property="og:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Twitter -->
-        <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:url" content="{{session["url"]}}">
-        <meta property="twitter:title" content="{{session["app_title"]}} | Graphs Page">
-        <meta property="twitter:description" content="The {{session["app_title"]}} helps to ensure that the conditions within the house meet the requirements of the people within the area.">
-
-        <!-- Mobile -->
-
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        <!-- Discord -->
-        <meta name="theme-color" content="#B30000" />
-
-        <!-- Bootstrap -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    </head>
+    {% set page_name = "Graphs" %}
+    {% include "standard_page.html" %}
     <body>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" href="{{session["url"]}}">{{session["app_title"]}}</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}">Home</a>
-                        </li>
-                        {%for i in menu: %}
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{session["url"]}}{{menu[i]}}">{{i}}</a>
-                        </li>
-                        {%endfor%}
-                    </ul>
-                </div>
-            </div>
-        </nav>
 
         <div class="text-center">
             {% if session["first_name"]: %}
@@ -66,10 +16,11 @@
                 Welcome to the Graph Page
             </h1>
             {% endif %}
+            <!--
             <lead style="margin-bottom: 50px;">
-                Click on a graph to download it
+                Click on a graph to download
             </lead>
-
+            -->
             <table class="table" style="margin-top: 30px;">
                 <thead style="display: none; position: fixed;">
                     <tr>
