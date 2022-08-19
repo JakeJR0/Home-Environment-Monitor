@@ -1,4 +1,12 @@
-# Home Environment Monitor
+<p align="center">
+  <picture width="10px">
+    <source media="(prefers-color-scheme: dark)" srcset="Server/static/app_logo_white.svg">
+    <source media="(prefers-color-scheme: light)" srcset="Server/static/app_logo_black.svg">
+    <img alt="HEMS Logo" scr="http://188.34.166.212:8080/static/app_logo_black.svg" width="300" />
+  </picture>
+</p>
+
+<h1 align="center">Home Environment Monitor<h1>
 
 ## Table of Content
 - [Project Information](#project-information)
