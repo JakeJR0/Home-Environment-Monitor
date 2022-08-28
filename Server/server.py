@@ -282,7 +282,10 @@ def get_menu():
 
     set_defaults()
     try:
+        # Checks if the user is logged in
+        
         if session["authorised"] == True:
+            # Checks the user's level
             if session["level"] >= 5:
                 return MenusByPermissions.super_user_menu
             else:
@@ -297,10 +300,14 @@ def set_defaults():
         This is used to set the default values for the session.
     """
     try:
+        # Checks if the app title exists within
+        # the session
         if session["app_title"]:
             return
         
     except KeyError:
+        # Adds the app data to the session.
+        
         session["authorised"] = None
         session["first_name"] = None
         session["last_name"] = None
@@ -538,6 +545,9 @@ def change_account():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """
+        This is used to log in to the application.
+    """
     warn_user = False
     warning_message = ""
     
@@ -587,6 +597,9 @@ def login():
 
 @app.route("/sensor_management", methods=["GET", "POST"])
 def sensor_management():
+    """
+        This is used to manage sensors.
+    """
     global bedroom_fan_minimum_temperature
     global fan_over_minimum_count
     global fan_under_minimum_count
@@ -640,6 +653,9 @@ def sensor_management():
 
 @app.route("/user_management")
 def admin():
+    """
+        This is the page that allows the admin to manage users.
+    """
     try:
         if session["level"] < 5:
             if session["authorised"] == None:
@@ -667,6 +683,9 @@ def admin():
 
 @app.route("/modify_user")
 def change():
+    """
+        This function is used to change the user's details.
+    """
     try:
         if session["authorised"] != True or session["level"] < 5:
             return render_template("access_denied.html", menu=get_menu())
@@ -694,6 +713,9 @@ def change():
 
 @app.route("/record", methods=["GET", "POST"])
 def temperature():
+    """
+        This function is used to record the temperature of the room.
+    """
     global environment_sensor_interaction
     
     if request.method == "POST":
@@ -718,6 +740,9 @@ def temperature():
 
 @app.route("/sensor_check")
 def sensor():
+    """
+        This function is used to check the state of the environment sensors.
+    """
     return json.dumps(
         {
             "success": True,
@@ -727,6 +752,9 @@ def sensor():
 
 @app.route("/report_security_change", methods=["GET", "POST"])
 def security_report():
+    """
+        This function is used to report a security change to the system.
+    """
 
     if request.method == "POST":
         json_data = request.get_json()
@@ -829,6 +857,9 @@ def security_report():
 
 @app.route("/toggle_sensor")
 def toggle_sensor():
+    """
+        Toggle the state of the sensors.
+    """
     global sensors_active
     set_defaults()
 
@@ -844,6 +875,9 @@ def toggle_sensor():
 
 @app.route("/set_sensor", methods=["GET", "POST"]) # SET UP
 def set_sensor_state():
+    """
+        Sets the state of the sensor.
+    """
     global sensors_active
     set_defaults()
     if request.method == "POST":
@@ -863,6 +897,9 @@ def set_sensor_state():
 
 @app.route("/server_information")
 def server_info():
+    """
+        Returns the server information
+    """
     global sensors_active
     global environment_modification
     global bedroom_fan_minimum_temperature
@@ -881,6 +918,9 @@ def server_info():
 
 @app.route("/set_environment_modification", methods=["GET", "POST"])
 def set_environment_state():
+    """
+        Sets the state of the environment modification system.
+    """
     global environment_modification
     set_defaults()
 
@@ -925,6 +965,9 @@ def set_environment_state():
 
 @app.route("/toggle_environment_modification")
 def toggle_environment():
+    """ 
+        Toggle the environment modification state.
+    """
     global environment_modification
     set_defaults()
 
@@ -962,6 +1005,9 @@ def toggle_environment():
 
 @app.route("/recent_security_information")
 def recent_security_sensor():
+    """
+        Returns the last security records.
+    """
     cursor = db.con.cursor()
 
     sensor_data = cursor.execute('''
@@ -1007,6 +1053,10 @@ def recent_security_sensor():
 
 @app.route("/recent_sensor_information")
 def recent_sensor():
+    """
+        Returns the last temperature and humidity readings from the environment_record table.
+    """
+    
     cursor = db.con.cursor()
 
     result = cursor.execute('''
@@ -1033,6 +1083,9 @@ def recent_sensor():
     
 @app.route("/account_settings")
 def account_settings():
+    """
+        Returns the account settings page for the user.
+    """
     set_defaults()
     try:
         if session["authorised"] != True:
@@ -1068,6 +1121,9 @@ def account_settings():
 
 @app.route("/active_keycard", methods=["GET", "POST"])
 def is_active_keycard():
+    """
+        Checks if the keycard is active / in-use
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1106,6 +1162,9 @@ def is_active_keycard():
 
 @app.route("/delete_keycards", methods=["GET", "POST"])
 def delete_all_keycards():
+    """
+        Delete all keycards for the current user
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1136,6 +1195,10 @@ def delete_all_keycards():
 
 @app.route("/add_keycard", methods=["GET", "POST"])
 def add_keycard():
+    """
+        Add a keycard to the database
+    """
+
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1184,6 +1247,9 @@ def add_keycard():
 
 @app.route("/keycard_count")
 def keycard_count():
+    """
+        Returns the number of keycards associated with the current account.
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1213,6 +1279,9 @@ def keycard_count():
 
 @app.route("/delete_keycard", methods=["GET", "POST"])
 def delete_keycard():
+    """
+        Delete a keycard from the database.
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1261,15 +1330,26 @@ def delete_keycard():
 
 @app.route("/graphs")
 def graph_page():
+    """
+        Graphs page, this page allows users to view the graphs.
+    """
     return render_template("graphs.html", menu=get_menu())
 
 def remove_export(file_name=""):
+    """
+        Removes the export file from the server.
+    """
+
     if os.path.exists(file_name):
         sleep(30)
         os.remove(file_name)
 
 @app.route("/get_downloadable_environment_data")
 def download_csv():
+    """
+        Downloads the environment data as a csv file.
+    """
+    
     set_defaults()
     failed_data = json.dumps({
             "success": False
@@ -1308,6 +1388,10 @@ def download_csv():
 
 @app.route("/get_downloadable_security_data")
 def download_security_csv():
+    """
+        Downloads a CSV of all security data.
+    """
+
     set_defaults()
     failed_data = json.dumps({
             "success": False
@@ -1359,6 +1443,9 @@ def download_security_csv():
 
 @app.route("/set_temperature", methods=["GET", "POST"])
 def set_temperature():
+    """
+        Set the wanted temperature for the environment.
+    """
     global bedroom_fan_minimum_temperature
 
     set_defaults()
@@ -1387,6 +1474,10 @@ def set_temperature():
 
 @app.route("/security_manager")
 def security_manager():
+    """
+        Security manager page, this allows the
+        user to manage the security sensors.
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1409,6 +1500,9 @@ def security_manager():
 
 @app.route("/add_security_sensor")
 def add_security_sensor():
+    """
+        Add a new security sensor to the system.
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1437,6 +1531,9 @@ def add_security_sensor():
 
 @app.route("/remove_security_sensor")
 def remove_security_sensor():
+    """
+        Remove a security sensor from the database
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1474,6 +1571,9 @@ def remove_security_sensor():
 
 @app.route("/delete_user")
 def delete_active_user():
+    """
+        Delete an active user from the database
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1530,6 +1630,9 @@ def delete_active_user():
 
 @app.route("/set_security_sensor_name")
 def edit_security_sensor():
+    """
+        Edit the name of a security sensor
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1563,6 +1666,9 @@ def edit_security_sensor():
 
 @app.route("/add_user", methods=["GET", "POST"])
 def add_new_user():
+    """
+        Add a new user to the system
+    """
     set_defaults()
     try:
         if session["authorised"] != True or session["level"] < 5:
@@ -1652,7 +1758,13 @@ def add_new_user():
 
 @app.route("/logout")
 def logout():
+    """
+        Logs the user out of the system
+    """
+    
     set_defaults()
+
+    # Removes data from session
     session.pop("authorised", None)
     session.pop("level", 0)
     session.pop("first_name", None)
@@ -1664,6 +1776,11 @@ def logout():
     return redirect("/")
 
 def get_record_count():
+    """
+        Gets the number of rows
+        within the environment record
+        table.
+    """
     con = db.con
 
     cursor = con.cursor()
@@ -1681,6 +1798,10 @@ def get_record_count():
         print(f"\nCurrently we have {i[0]} rows in the database.\nThe average the temperature and humidity is {i[1]}°C and {i[2]}%\n")
 
 def average_stat_by_day():
+    """
+        Displays the average stats by day.
+    """
+
     cursor = db.con.cursor()
 
     rows = cursor.execute('''
@@ -1702,13 +1823,21 @@ def average_stat_by_day():
         hum.append(i[1])
         hours.append(i[2])
         
+    # Sets the graphs title
     plt.title("Average Conditions by hour")
+    # Plots the temperature
     plt.plot(hours, temp, label="Temperature (°C)")
+    # Plots the humidty
     plt.plot(hours, hum, label="Humidity (%)")
+    # Adds the legend to the graph
     plt.legend()
+    # Adds x-axis label
     plt.xlabel("Hours")
+    # Adds y-axis label
     plt.ylabel("Environment Condition")
+    # Rotates x-axis labels by 45 degrees
     plt.xticks(rotation=45)
+    # Displays the graph
     plt.show()
 
 def average_stat_by_day_humidity(show=True, export_file_name="hourly_hum"):
@@ -1741,22 +1870,30 @@ def average_stat_by_day_humidity(show=True, export_file_name="hourly_hum"):
         humidity_max.append(i[2])
         hours.append(i[3])
         
-        
+    # Sets the graph title
     plt.title(f"Humidity by hour within the environment")
+    # Plots the average humidity
     plt.plot(hours, humidity_avg, label="Average Humidity (°C)")
+    # Plots the minimum humidity
     plt.plot(hours, humidity_min, label="Minimum Humidity (°C)")
+    # Plots the maximum humidity
     plt.plot(hours, humidity_max, label="Maximum Humidity (°C)")
+    # Sets the legend
     plt.legend()
+    # Sets the x-axis label
     plt.xlabel("Hours")
+    # Sets the y-axis label
     plt.ylabel("Humidity (%)")
+    # Rotates the x-axis labels
     plt.xticks(rotation=45)
+    
     if show:
         plt.show()
     else:
         file_name = f"static/graphs/{export_file_name}.png"
         if os.path.exists(file_name):
             os.remove(file_name)
-            
+        # Shows the graph
         plt.savefig(file_name)
         plt.close()
 
@@ -1790,14 +1927,23 @@ def average_stat_by_day_temperature(show=True, export_file_name="hourly_temp"):
         temp_max.append(i[2])
         hours.append(i[3])
         
+    # Sets the graph title
     plt.title(f"Temperature by hour within the environment")
+    # Plots the average temperature
     plt.plot(hours, temp_avg, label="Average Temperature (°C)")
+    # Plots the minimum temperature
     plt.plot(hours, temp_min, label="Minimum Temperature (°C)")
+    # Plots the maximum temperature
     plt.plot(hours, temp_max, label="Maximum Temperature (°C)")
+    # Sets the legend
     plt.legend()
+    # Sets the x-axis label
     plt.xlabel("Hours")
+    # Sets the y-axis label
     plt.ylabel("Temperature (°C)")
+    # Rotates the x-axis labels
     plt.xticks(rotation=45)
+    # Shows the graph if show is True
     if show:
         plt.show()
     else:        
@@ -1805,6 +1951,7 @@ def average_stat_by_day_temperature(show=True, export_file_name="hourly_temp"):
         if os.path.exists(file_name):
             os.remove(file_name)
             
+        # Saves the graph
         plt.savefig(file_name)
         plt.close()
 
@@ -1843,22 +1990,33 @@ def average_stat_by_week_temperature(show=True, export_file_name="monthly_temp")
         temp_max.append(row[2])
         days.append(row[3])
         
+    # Sets the graph title
     plt.title("Average Temperature in the environment by the day of the month")
+    # Plots the average temperature
     plt.plot(days, temp_ave, label="Average Temperature (°C)", color="red")
+    # Plots the minimum temperature
     plt.plot(days, temp_min, label="Minimum Temperature (°C)", color="blue")
+    # Plots the maximum temperature
     plt.plot(days, temp_max, label="Maximum Temperature (°C)", color="green")
+    # Adds the legend to the graph
     plt.legend()
+    # Sets the x-axis label
     plt.xlabel("Days")
+    # Sets the y-axis label
     plt.ylabel("Temperature (°C)")
+    # Rotates the x-axis labels
     plt.xticks(rotation=45)
     
     if show == True:
+        # Displays the graph
         plt.show()
     else:
+        
         file_name = f"static/graphs/{export_file_name}.png"
         if os.path.exists(file_name):
             os.remove(file_name)
-            
+
+        # Saves the graph to the file
         plt.savefig(file_name)
         plt.close()
 
@@ -1871,6 +2029,7 @@ def average_stat_by_week_humidity(show=True, export_file_name="monthly_hum"):
     """
     
     cur = db.con.cursor()
+    
     rows = cur.execute('''
         SELECT
             round(AVG(humidity), 2),
@@ -1898,40 +2057,66 @@ def average_stat_by_week_humidity(show=True, export_file_name="monthly_hum"):
         humidity_max.append(row[2])
         days.append(row[3])
         
+    # Sets the graph title
     plt.title("Average Humidity in the environment by the day of the month")
+    # Plots the average humidity
     plt.plot(days, humidity_ave, label="Average Humidity (°C)", color="red")
+    # Plots the minimum humidity
     plt.plot(days, humidity_min, label="Minimum Humidity (°C)", color="blue")
+    # Plots the maximum humidity
     plt.plot(days, humidity_max, label="Maximum Humidity (°C)", color="green")
+    # Adds the legend to the graph
     plt.legend()
+    # Sets the XLabel of the graph
     plt.xlabel("Days")
+    # Sets the YLabel of the graph
     plt.ylabel("Humidity (%)")
+    
+    # Rotates the days by 45 degrees
     plt.xticks(rotation=45)
     
     if show == True:
+        # Displays the graph.
         plt.show()
     else:
+        # Gets file name and location
         file_name = f"static/graphs/{export_file_name}.png"
         if os.path.exists(file_name):
             os.remove(file_name)
             
+        # Saves the graph.
         plt.savefig(file_name)
         plt.close()
     
 @app_schedule.task("interval", id="Daily_Graph", hours=24)
 def daily_graph():
-    
+    """
+        This will update the daily graphs,
+        this ensures that it is active.
+    """
+
     average_stat_by_week_temperature(False)
     average_stat_by_week_humidity(False)
     print("Updated Daily Graphs")
     
 @app_schedule.task("interval", id="Hourly_Graph", hours=1)
 def hour_graph():
+    """
+        This will update the hourly graphs,
+        this ensures that it is active.
+    """
+
     average_stat_by_day_temperature(False)
     average_stat_by_day_humidity(False)
     print("Updated Hourly Graph")
 
 @app_schedule.task("interval", id="Sensor Check", seconds=30)
 def sensor_message_check():
+    """
+        This will check that the micro-controller
+        has interacted with the server. 
+    """
+    
     global environment_sensor_interaction
     if environment_sensor_interaction:
         print("Sensor Interacted with server.")
@@ -1943,18 +2128,33 @@ def sensor_message_check():
     
 
 def generate_graphs():
+    """
+        This will generate all the graphs needed
+        for the website.
+    """
+    
     daily_graph()
     hour_graph()
 
     print("\nUpdated Graphs\n\n")
     
 def empty_directory(path=""):
+    """
+        This searches a path for any files and
+        deletes them.
+    """
+
     for file_name in os.listdir(path):
         file_path = os.path.join(path, file_name)
         if os.path.isfile(file_path):
             os.remove(file_path)
 
 def setup_server():
+    """
+        This will setup the server, by ensuring that
+        the server environment is correct.
+    """
+    
     if not os.path.exists("static/data_exports"):
         os.mkdir("static/data_exports")
 
@@ -1970,11 +2170,26 @@ def setup_server():
     generate_graphs()
 
 def run_server():
+    """
+        This starts up the program,
+        and runs the server.
+    """
+
+    # Starts the app scheduler
     app_schedule.start()
+    # Starts the flask instance
     app.run(host="0.0.0.0", port=8080)
 
 def clean_up_server():
+    """
+        This ensures that the system is turned
+        before the program ends.
+    """
+
+    # Turns off the home fan
     home_fan_control(False)
+    # Reports the amount of rows within
+    # the environment data table.
     get_record_count()
     sleep(5)
 
