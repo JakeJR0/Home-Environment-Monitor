@@ -37,7 +37,7 @@ In general with the current version of the system I do believe that the system i
 - Make the website more friendly for mobile users
 - [Amazon](https://www.amazon.co.uk/) Alexa Intergration (Currently in progress)
 
-## Demonstation
+## Demonstration
 <h3>
   <a href="http://188.34.166.212:8080/" target="_blank">
     Live Server
