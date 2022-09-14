@@ -9,11 +9,11 @@ local_mode = False
 web_server = ""
 
 if local_mode:
-    # Sets the the local IP of the usual workstation (Used for testing)
+    # Sets the the local IP of the usual workstation
     web_server = "http://192.168.0.22:8080"
 else:
     # Sets to the main server IP address
-    web_server = "http://188.34.166.212:8080/"
+    web_server = "http://188.34.166.212:8080/" # "http://192.168.0.22:8080"
 
 def post_to_server(data=None, route="/"):
     """
@@ -121,3 +121,14 @@ def post_sensor_results():
         fail_safe_count += 1
         
 
+if __name__ == "__main__":
+    """    
+        This is used to ensure that the micro-controller is able to
+        send a request to the server.
+        
+        This can be useful for checking network issues when first setting up the
+        system.
+    """
+    print(web_server) 
+    res = request.get(web_server + "/")
+    print(res)
