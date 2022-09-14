@@ -1,23 +1,37 @@
-print("I just woke up")
+"""
+    This file is used to test that the DHT22 sensor
+    has been wired correctly to the Micro-Controller,
+    additionally this can be used to ensure that it is 
+    functioning as inteded.
+"""
+
+# Imports the required modules
+
 import dht
-print("I imported dht")
 from machine import Pin
 from time import sleep
-print("I imported pin")
-dht22_sensor = dht.DHT22(Pin(12))
-print("I set up the pin")
 
+# Sets up the sensor for reading
+dht22_sensor = dht.DHT22(Pin(12))
+
+# Runs until the user terminates the script
 while True:
+    # Attempts to read the sensor
     try:
+        # Measures the environment
         dht22_sensor.measure()
-        print("I measured")
+        # Gets the temperature
         temp = dht22_sensor.temperature()
-        print("I got the temp")
+        # Gets the humidity
         hum = dht22_sensor.humidity()
-        print("I got the hum")
+        # Prints out the recorded data
         print(temp, hum)
     except OSError:
+        # Prints out an error for the user
         print("Failed to read DH22")
-    print("About to sleep")
+    # Informs the user that the program is about to sleep
+    print("Sleeping")
+    # Waits the cooldown
     sleep(2)
-    print("Slept")
+    # Informs the user the sleeping has concluded.
+    print("Finished Sleeping")
