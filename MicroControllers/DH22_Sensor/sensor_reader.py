@@ -31,3 +31,16 @@ def read_dht(format_data=True):
     # Returns the values to the caller.
     return temp, hum
 
+if __name__ == "__main__":
+    """
+        Used to test the module individually,
+        this can be used to ensure that the DHT22
+        sensor is correctly setup.
+    """
+    
+    dht22_sensor.measure()
+    temp = dht22_sensor.temperature()
+    hum = dht22_sensor.humidity()
+    temp = f"{temp}°C"
+    hum = f"{hum}%"
+    print(temp, hum)
