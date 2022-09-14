@@ -8,7 +8,9 @@ import gc
 #webrepl.start()
 gc.collect()
 
-import wifi_connection
+from wifi_connection import connect
 from main import run
 
+connect()
 run()
+
