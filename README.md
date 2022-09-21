@@ -8,6 +8,9 @@
 
 <h1 align="center">Home Environment Monitor<h1>
 
+[![Pylint](https://github.com/JakeJR0/Home-Environment-Monitor/actions/workflows/pylint.yml/badge.svg?branch=main)](https://github.com/JakeJR0/Home-Environment-Monitor/actions/workflows/pylint.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+  
 ## Table of Content
 - [Project Information](#project-information)
 - [Project Plan](#project-plan)
