@@ -86,6 +86,8 @@ class MenusByPermissions:
 # This sets the ifft webhook key.
 ifft_key = "R9gQkI_I1PPMu-LSox_OQ"
 
+sensor_reset_count = 0
+
 def reset_sensors():
     """
         This is used to reset the sensors using an IFFT
@@ -114,11 +116,15 @@ def reset_sensors():
     token = f"/json/with/key/{ifft_key}"
     url_to_use = f"{base_url}{token}"
     
-    try:
-        # Attempts to send a GET request to the server.
-        server_requests.get(url_to_use)
-    except TimeoutError:
-        pass
+    if sensor_reset_count >= 3:
+        print("Sensors are currently unresponsive, currently on cooldown.")
+    else:
+        try:
+            # Attempts to send a GET request to the server.
+            server_requests.get(url_to_use)
+            sensor_reset_count += 1
+        except TimeoutError:
+            pass
 
 def home_fan_control(state=False):
     """
@@ -2126,6 +2132,15 @@ def sensor_message_check():
         print("Sensor not interacted with server.")
         reset_sensors()
     
+@app_schedule.task("interval", id="Sensor Cooldown Reset", minutes=15)
+def sensor_cooldown_reset():
+    """
+        This will reset the cooldown of the sensors.
+    """
+    
+    global environment_sensor_cooldown
+    environment_sensor_cooldown = False
+    print("Sensor cooldown reset.")
 
 def generate_graphs():
     """
