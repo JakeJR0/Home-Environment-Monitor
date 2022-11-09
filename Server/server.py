@@ -106,6 +106,7 @@ def reset_sensors():
 
     global ifft_key
     global sensors_active
+    global sensor_reset_count
     
     if sensors_active == False:
         print("Sensors are currently turned off.")
